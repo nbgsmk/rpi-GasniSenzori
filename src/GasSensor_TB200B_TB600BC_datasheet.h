@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef SENSOR_TB600C_CO_100PPM_H_
-#define SENSOR_TB600C_CO_100PPM_H_
+#ifndef GASSENSOR_TB200B_TB600BC_H_
+#define GASSENSOR_TB200B_TB600BC_H_
 
 #define SENSOR_DATA_ERROR (int)-1
 
@@ -442,4 +442,4 @@ https://ecsense.com/wp-content/uploads/2021/03/TB600C_CO_100ppm_Technical-Specif
 
  */
 
-#endif /* SENSOR_TB600C_CO_100PPM_H_ */
+#endif /* GASSENSOR_TB200B_TB600BC_H_ */

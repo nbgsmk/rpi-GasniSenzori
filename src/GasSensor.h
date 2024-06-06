@@ -11,16 +11,16 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "Sensor_TB600C_CO_100ppm_datasheet.h"
+#include "GasSensor_TB200B_TB600BC_datasheet.h"
 
 
 #define MUX_ADR 0b001			// CONFIG mux adresa ovog senzora
 
-class CO100 {
+class GasSensor {
 
 public:
-	CO100();
-	virtual ~CO100();
+	GasSensor();
+	virtual ~GasSensor();
 
 	uint8_t rxB[50];							// bytes received from UART
 

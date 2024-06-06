@@ -11,12 +11,12 @@
 #include "app.h"
 
 // hardware driver
-#include "CO100.h"
 #include "UartMux.h"
 //#include <wiringPi.h>
 
 // pomocnici
 #include "Blinkovi.h"
+#include "GasSensor.h"
 
 
 using namespace std;
@@ -28,7 +28,7 @@ int main() {
 
 		Blinkovi *b = new Blinkovi();
 		UartMux *mux = new UartMux();
-		CO100 *co = new CO100();
+		GasSensor *co = new GasSensor();
 
 		HAL_Delay(2000);
 		b->trep(50, 200);

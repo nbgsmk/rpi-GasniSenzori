@@ -5,12 +5,11 @@
  */
 
 // zajednicki
+#include "GasSensor.h"
+
 #include "app.h"
 
 // hardware driver
-#include "CO100.h"
-
-// C++ standard
 #include <bits/stdint-uintn.h>
 #include <algorithm>
 #include <cstdio>
@@ -20,17 +19,17 @@ using namespace std;
 /**
  * Constructor to create sensor and perform minimal initialization
  */
-CO100::CO100() {
+GasSensor::GasSensor() {
 
 }
 
-CO100::~CO100() {
+GasSensor::~GasSensor() {
 
 }
 
 
 // stm32 specific
-void CO100::setSensorUart(int uart) {
+void GasSensor::setSensorUart(int uart) {
 //	hUrt = sensorUart; // dummy todo
 
 
@@ -38,7 +37,7 @@ void CO100::setSensorUart(int uart) {
 }
 
 // stm32 specific
-void CO100::setDebugUart(int uart) {
+void GasSensor::setDebugUart(int uart) {
 //	hUrt = sensorUart; // dummy todo
 
 }
@@ -47,7 +46,7 @@ void CO100::setDebugUart(int uart) {
 /**
  * Perform minimal initialization
  */
-void CO100::init(uint32_t waitSensorStartup_mS) {
+void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	HAL_Delay(waitSensorStartup_mS);
 	send(cmdSetPassiveMode);
 	send(cmdRunningLightOff);
@@ -61,7 +60,7 @@ void CO100::init(uint32_t waitSensorStartup_mS) {
 /**
  * Query parameters from sensor and populate struct
  */
-void CO100::getSensorProperties_D7() {
+void GasSensor::getSensorProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
@@ -123,7 +122,7 @@ void CO100::getSensorProperties_D7() {
 /**
  * Set active mode: sensor will send measurement data automatically in 1 second intervals
  */
-void CO100::setActiveMode() {
+void GasSensor::setActiveMode() {
 	send(cmdSetActiveMode);
 }
 
@@ -131,7 +130,7 @@ void CO100::setActiveMode() {
 /**
  * Set passive mode: sensor will send measurement data only when requested
  */
-void CO100::setPassiveMode() {
+void GasSensor::setPassiveMode() {
 	send(cmdSetPassiveMode);
 }
 
@@ -139,14 +138,14 @@ void CO100::setPassiveMode() {
 /**
  * @return maximum measurement range from sensor properties
  */
-int CO100::getMaxRange() {
+int GasSensor::getMaxRange() {
 	return (int)sensorProperties.maxRange;
 }
 
 /**
  * @return current gas concentration in ppm
  */
-int CO100::getGasConcentrationPpm() {
+int GasSensor::getGasConcentrationPpm() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
@@ -164,7 +163,7 @@ int CO100::getGasConcentrationPpm() {
 /**
  * @return current gas concentration in ppm
  */
-int CO100::getGasConcentrationMgM3() {
+int GasSensor::getGasConcentrationMgM3() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
@@ -184,7 +183,7 @@ int CO100::getGasConcentrationMgM3() {
 /**
  * @return gas concentration normalized to 0~100% of max measurement range
  */
-int CO100::getGasPercentageOfMax() {
+int GasSensor::getGasPercentageOfMax() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
@@ -203,7 +202,7 @@ int CO100::getGasPercentageOfMax() {
 /**
  * @return temperature from combined reading (datasheet Command 6)
  */
-float CO100::getTemperature() {
+float GasSensor::getTemperature() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 
@@ -222,7 +221,7 @@ float CO100::getTemperature() {
 /**
  * @return relative humidity from combined reading (datasheet Command 6)
  */
-float CO100::getRelativeHumidity() {
+float GasSensor::getRelativeHumidity() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 
@@ -242,7 +241,7 @@ float CO100::getRelativeHumidity() {
 /**
  * Sensor activity led will blink during operation
  */
-void CO100::setLedOn() {
+void GasSensor::setLedOn() {
 	send(cmdRunningLightOn);
 }
 
@@ -250,7 +249,7 @@ void CO100::setLedOn() {
 /**
  * Sensor activity led will be off
  */
-void CO100::setLedOff() {
+void GasSensor::setLedOff() {
 	send(cmdRunningLightOff);
 }
 
@@ -258,7 +257,7 @@ void CO100::setLedOff() {
 /**
  * Sensor activity led will be off
  */
-bool CO100::getLedStatus() {
+bool GasSensor::getLedStatus() {
 	// TODO mogao bi da vraca enum on, off, error
 	bool rezultat;
 	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
@@ -280,7 +279,7 @@ bool CO100::getLedStatus() {
 /**
  * send raw command to sensor and wait for reply
  */
-std::vector<uint8_t> CO100::send(const CmdStruct_t txStruct) {
+std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	uint8_t txArr[txStruct.cmd.size()];
 	std::copy(txStruct.cmd.begin(), txStruct.cmd.end(), txArr);
 
@@ -316,14 +315,14 @@ std::vector<uint8_t> CO100::send(const CmdStruct_t txStruct) {
 
 
 
-void CO100::sendRawCommand(const uint8_t *plainTxt, uint16_t size){
+void GasSensor::sendRawCommand(const uint8_t *plainTxt, uint16_t size){
 	std::vector<uint8_t> s(plainTxt, plainTxt + size);
 	CmdStruct_t cmd = { s, size };
 	send(cmd);
 }
 
 
-bool CO100::isReplyChecksumValid(std::vector<uint8_t> repl) {
+bool GasSensor::isReplyChecksumValid(std::vector<uint8_t> repl) {
 	uint8_t sum = 0;
 	for (unsigned int i = 1; i < (repl.size()-1); ++i) {
 		// NOTA:
