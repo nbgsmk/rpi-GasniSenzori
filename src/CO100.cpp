@@ -30,7 +30,7 @@ CO100::~CO100() {
 
 
 // stm32 specific
-void CO100::setSensorUart() {
+void CO100::setSensorUart(int uart) {
 //	hUrt = sensorUart; // dummy todo
 
 
@@ -38,7 +38,7 @@ void CO100::setSensorUart() {
 }
 
 // stm32 specific
-void CO100::setDebugUart() {
+void CO100::setDebugUart(int uart) {
 //	hUrt = sensorUart; // dummy todo
 
 }
@@ -286,30 +286,29 @@ std::vector<uint8_t> CO100::send(const CmdStruct_t txStruct) {
 
 	// stm32 specific
 	// send bytes to debug port
-    uint8_t c[] = "\n cmd=";
-    HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
-    HAL_UART_Transmit(&hUrtDbg, txArr, sizeof(txArr), 500);
+    uint8_t c[] = {"\n cmd="};
+    HAL_UART_Transmit(1, c, sizeof(c), 500);
+    HAL_UART_Transmit_DBG(2, c, sizeof(c), 500);
 
 
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
-    HAL_UART_Transmit(&hUrt, txArr, sizeof(txArr), 500);
+    HAL_UART_Transmit(hUrt, c, sizeof(c), 500);
 	if (txStruct.expectedReplyLen > 0) {
-		if(HAL_UART_Receive(&hUrt, rxB, txStruct.expectedReplyLen, 10000)==HAL_OK){
+		if(HAL_UART_Receive(1, rxB, 100, 500)==HAL_OK){
 			for (int i = 0; i < txStruct.expectedReplyLen; ++i) {
 				reply.push_back(rxB[i]);
 			}
 
-		    __NOP();
+
 		    uint8_t r[] = " reply=";
-		    HAL_UART_Transmit(&hUrtDbg, r, sizeof(r), 500);
-		    HAL_UART_Transmit(&hUrtDbg, rxB, txStruct.expectedReplyLen, 500);
+		    HAL_UART_Transmit(hUrtDbg, r, sizeof(r), 500);
+		    HAL_UART_Transmit(hUrtDbg, rxB, txStruct.expectedReplyLen, 500);
 		    uint8_t c[] = ";\n";
-		    HAL_UART_Transmit(&hUrtDbg, c, sizeof(c), 500);
+		    HAL_UART_Transmit(hUrtDbg, c, sizeof(c), 500);
 		} else {
-		    __NOP();
 		    uint8_t jbg[] = "\n no reply \n";
-		    HAL_UART_Transmit(&hUrtDbg, jbg, sizeof(jbg), 500);
+		    HAL_UART_Transmit(hUrtDbg, jbg, sizeof(jbg), 500);
 		}
 	}
 	return reply;

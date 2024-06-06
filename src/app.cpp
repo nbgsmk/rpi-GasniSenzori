@@ -13,6 +13,7 @@
 // hardware driver
 #include "CO100.h"
 #include "UartMux.h"
+//#include <wiringPi.h>
 
 // pomocnici
 #include "Blinkovi.h"
@@ -46,8 +47,8 @@ int main() {
 
 				// CO senzor
 				mux->setAdr(CO_ADR);
-				co->setSensorUart(huart1);
-				co->setDebugUart(huart2);
+				co->setSensorUart(1);
+				co->setDebugUart(2);
 				co->init(2000);
 
 				for (;;) {
@@ -93,8 +94,8 @@ int main() {
 				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
-					co->setSensorUart(huart2);
-					co->setDebugUart(huart2);
+					co->setSensorUart(2);
+					co->setDebugUart(2);
 					uint8_t s[] = {'z', 'e', 'c'};
 	//				uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 

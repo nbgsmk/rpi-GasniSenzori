@@ -25,8 +25,8 @@ public:
 	uint8_t rxB[50];							// bytes received from UART
 
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
-	void setSensorUart();
-	void setDebugUart();
+	void setSensorUart(int uart);
+	void setDebugUart(int uart);
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
@@ -59,6 +59,15 @@ private:
 	void getSensorProperties_D7();					// popuni struct sa podacima o senzoru
 	std::vector<uint8_t> send(const CmdStruct_t txCmd);				// posalji komande senzoru, cekaj odgovor
 	bool isReplyChecksumValid(std::vector<uint8_t> repl);
+
+
+	// STOPSHIP hardware dummy
+	void HAL_UART_Transmit(int uartRef, uint8_t c[], int len, int timeout_mS);
+	void HAL_UART_Transmit_DBG(int uartRef, uint8_t c[], int len, int timeout_mS);
+    int hUrt = 1;
+    int hUrtDbg = 2;
+	int HAL_UART_Receive(int uartRef, uint8_t rxB[], int len, int timeout_mS);
+	int HAL_OK = 1;
 
 };
 

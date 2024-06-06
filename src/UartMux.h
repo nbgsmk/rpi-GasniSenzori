@@ -32,6 +32,7 @@
 #define O2_ADR		7
 #define itd_adr		8
 
+
 typedef uint8_t MuxAdr_t;
 
 class UartMux {
@@ -45,6 +46,15 @@ public:
 	MuxAdr_t getAdr();					// koja je trenutna adresa?
 
 private:
+
+	// STOPSHIP dummy
+	#define UartMuX_s1_Pin 1
+	#define UartMuX_s2_Pin 2
+	#define UartMuX_s3_Pin 3
+	void HAL_GPIO_WritePin(int port, int pin, int state);
+	int GPIOB = 1;
+	int GPIO_PIN_RESET = 0;
+	int GPIO_PIN_SET = 1;
 
 
 };

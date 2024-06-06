@@ -14,8 +14,9 @@
 #include <string>
 #include <vector>
 
-void HAL_Delay(unsigned int delay_mS){
-	usleep(delay_mS * 1000);
-};
+void HAL_Delay(int delay_mS);
+//{
+//	usleep(delay_mS * 1000);
+//};
 
 #endif /* APP_H_ */
