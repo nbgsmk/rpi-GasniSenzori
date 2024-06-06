@@ -1,10 +1,10 @@
 /*
- * CO100.h
+ * GasSensor.h
  *
  */
 
-#ifndef SRC_CO100_H_
-#define SRC_CO100_H_
+#ifndef SRC_GASSENSOR_H_
+#define SRC_GASSENSOR_H_
 
 #include "app.h"
 #include <array>
@@ -19,7 +19,7 @@
 class GasSensor {
 
 public:
-	GasSensor();
+	GasSensor(int muxAddress);
 	virtual ~GasSensor();
 
 	uint8_t rxB[50];							// bytes received from UART
@@ -47,6 +47,7 @@ public:
 
 
 private:
+	int muxAddress;
 	bool runningLed;
 	struct {
 		uint8_t tip;
@@ -71,4 +72,4 @@ private:
 
 };
 
-#endif /* SRC_CO100_H_ */
+#endif /* SRC_GASSENSOR_H_ */

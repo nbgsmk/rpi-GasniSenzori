@@ -28,7 +28,8 @@ int main() {
 
 		Blinkovi *b = new Blinkovi();
 		UartMux *mux = new UartMux();
-		GasSensor *co = new GasSensor();
+		GasSensor *co = new GasSensor(3);
+		GasSensor *h2s = new GasSensor(5);
 
 		HAL_Delay(2000);
 		b->trep(50, 200);

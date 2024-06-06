@@ -1,6 +1,5 @@
 /*
- * Driver for "TB600C CO 100ppm" sensor
- * CO100.cpp
+ * Driver for "TB200B_TB600BC_datasheet" sensor
  *
  */
 
@@ -19,7 +18,8 @@ using namespace std;
 /**
  * Constructor to create sensor and perform minimal initialization
  */
-GasSensor::GasSensor() {
+GasSensor::GasSensor(int muxAddress) {
+	this->muxAddress = muxAddress;
 
 }
 
