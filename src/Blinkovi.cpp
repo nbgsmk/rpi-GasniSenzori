@@ -5,37 +5,51 @@
  *      Author: peca
  */
 
-#include "app.h"
+
+// C++ standard
+#include <unistd.h>
+
+// hardware driver
+#include <wiringPi.h>
+
+// pomocnici
 #include "Blinkovi.h"
 
+
 Blinkovi::Blinkovi() {
+	pinMode(LED_pin, OUTPUT);
 	ledoff();
 }
 
 Blinkovi::~Blinkovi() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
 
 
 void Blinkovi::ledon(void){
-	HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_RESET);
+	digitalWrite(LED_pin, LOW);
 }
 
 void Blinkovi::ledoff(void){
-	HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_SET);
+	digitalWrite(LED_pin, HIGH);
 }
 
 void Blinkovi::ledtogl(void) {
-	HAL_GPIO_TogglePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin);
+	auto x = digitalRead(LED_pin) == HIGH;
+	if(x==HIGH){
+		digitalWrite(LED_pin, LOW);
+	} else {
+		digitalWrite(LED_pin, HIGH);
+	}
 }
 
 void Blinkovi::trep(uint32_t ticks_on, uint32_t ticks_off){
 	ledon();
-	HAL_Delay(ticks_on);
+	usleep(ticks_on * 1000);
 	ledoff();
-	HAL_Delay(ticks_off);
+	usleep(ticks_off * 1000);
 }
 
 void Blinkovi::trepCnt(uint32_t count, uint32_t ticks_on, uint32_t ticks_off){
@@ -56,7 +70,7 @@ void Blinkovi::trepCntPer(uint32_t count, uint32_t ticks_on, uint32_t ticks_off,
 	} else {
 		ostatak = period - (count * (ticks_on + ticks_off));
 	}
-	HAL_Delay(ostatak);
+	usleep(ostatak * 1000);
 
 }
 

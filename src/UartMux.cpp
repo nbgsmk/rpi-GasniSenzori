@@ -6,6 +6,9 @@
  */
 
 
+// C++
+#include <iostream>
+
 // hardware driver
 #include "UartMux.h"
 #include <wiringPi.h>

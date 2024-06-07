@@ -7,16 +7,20 @@
 //============================================================================
 
 
-// zajednicki
-#include "app.h"
+// C++
+#include <iostream>
+#include <unistd.h>
+#include <stdint.h>
+#include <string>
+#include <vector>
 
 // hardware driver
 #include "UartMux.h"
 #include <wiringPi.h>
+#include "GasSensor.h"
 
 // pomocnici
 #include "Blinkovi.h"
-#include "GasSensor.h"
 
 
 using namespace std;
@@ -24,9 +28,7 @@ using namespace std;
 int main() {
 	cout << "Hey hey" << endl; // prints Hey hey
 
-//	wiringPiSetupGpio();
-
-
+	wiringPiSetupGpio();
 
 	while (1) {
 
@@ -35,7 +37,7 @@ int main() {
 		GasSensor *co = new GasSensor(adr_CO);
 		GasSensor *h2s = new GasSensor(adr_H2S);
 
-		HAL_Delay(2000);
+		usleep(2000 * 1000);
 		b->trep(50, 200);
 		b->trep(50, 200);
 		b->trep(50, 200);
@@ -52,8 +54,8 @@ int main() {
 
 				// CO senzor
 				mux->setAdr(adr_CO);
-				co->setSensorUart(1);
-				co->setDebugUart(2);
+//				co->setSensorUart(1);
+//				co->setDebugUart(2);
 				co->init(2000);
 
 				for (;;) {
@@ -65,7 +67,7 @@ int main() {
 						} else {
 							co->setLedOn();
 						}
-						HAL_Delay(2000);
+						usleep(2000 * 1000);
 					}
 
 					b->trep(5, 50);
@@ -76,14 +78,14 @@ int main() {
 					float celsius = co->getTemperature();
 					float rh = co->getRelativeHumidity();
 
-					HAL_Delay(1000);
+					usleep(2000 * 1000);
 
 					// pretvaramo se da imamo jos neki senzor
 					b->trep(5, 50);
 					b->trep(5, 50);
 					b->trep(5, 50);
 					mux->setAdr(adr_H2S);
-					HAL_Delay(3000);
+					usleep(3000 * 1000);
 
 				}
 				break;
@@ -99,8 +101,8 @@ int main() {
 				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
-					co->setSensorUart(2);
-					co->setDebugUart(2);
+//					co->setSensorUart(2);
+//					co->setDebugUart(2);
 					uint8_t s[] = {'z', 'e', 'c'};
 	//				uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
@@ -121,16 +123,16 @@ int main() {
 					b->trepCnt(blok, 5, 250);
 
 					mux->setAdr(adr_CO);
-					HAL_Delay(1000);
+					usleep(1000 * 1000);
 
 					mux->setAdr(adr_H2S);
-					HAL_Delay(1000);
+					usleep(1000 * 1000);
 
 					mux->setAdr(adr_O2);
-					HAL_Delay(1000);
+					usleep(1000 * 1000);
 
 					mux->setAdr(adr_itd);
-					HAL_Delay(1000);
+					usleep(1000 * 1000);
 				}
 				break;
 			}

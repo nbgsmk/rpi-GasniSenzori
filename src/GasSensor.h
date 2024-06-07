@@ -6,14 +6,14 @@
 #ifndef SRC_GASSENSOR_H_
 #define SRC_GASSENSOR_H_
 
-#include "app.h"
 #include <array>
 #include <cstring>
 #include <stdexcept>
 #include "UartMux.h"
+#include <stdint.h>
+#include <vector>
 
 #include "GasSensor_TB200B_TB600BC_datasheet.h"
-
 
 #define MUX_ADR 0b001			// CONFIG mux adresa ovog senzora
 
@@ -26,8 +26,8 @@ public:
 	uint8_t rxB[50];							// bytes received from UART
 
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
-	void setSensorUart(int uart);
-	void setDebugUart(int uart);
+//	void setSensorUart(int uart);
+//	void setDebugUart(int uart);
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
@@ -62,12 +62,6 @@ private:
 	std::vector<uint8_t> send(const CmdStruct_t txCmd);				// posalji komande senzoru, cekaj odgovor
 	bool isReplyChecksumValid(std::vector<uint8_t> repl);
 
-
-	// STOPSHIP hardware dummy
-//	void HAL_UART_Transmit(int uartRef, uint8_t c[], int len, int timeout_mS);
-	void HAL_UART_Transmit_DBG(int uartRef, uint8_t c[], int len, int timeout_mS);
-	int HAL_UART_Receive(int uartRef, uint8_t rxB[], int len, int timeout_mS);
-	int HAL_OK = 1;
 
 };
 

@@ -3,19 +3,20 @@
  *
  */
 
-// zajednicki
-#include "GasSensor.h"
-
-#include "app.h"
-
-// hardware driver
+// C++
 #include <bits/stdint-uintn.h>
 #include <algorithm>
 #include <cstdio>
+#include <unistd.h>
+
+
+// hardware driver
+#include "GasSensor.h"
 
 // rpi wiringpi specific
 #include <wiringPi.h>
 #include <wiringSerial.h>
+
 int fd;
 int serialStat;
 
@@ -39,17 +40,13 @@ GasSensor::~GasSensor() {
 }
 
 
-// stm32 specific
-void GasSensor::setSensorUart(int uart) {
-
-}
-
 
 /**
  * Perform minimal initialization
  */
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
-	HAL_Delay(waitSensorStartup_mS);
+	usleep(waitSensorStartup_mS * 1000);
+
 	send(cmdSetPassiveMode);
 	send(cmdRunningLightOff);
 	getSensorProperties_D7();
