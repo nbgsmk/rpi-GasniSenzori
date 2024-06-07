@@ -8,13 +8,21 @@
 
 // hardware driver
 #include "UartMux.h"
+#include <wiringPi.h>
+#include <wiringSerial.h>
+
+
 
 UartMux::UartMux() {
-
+	this->currentAddress = adr_NOUSE_8;
+	pinMode(UartMuX_pinS1, OUTPUT);
+	pinMode(UartMuX_pinS2, OUTPUT);
+	pinMode(UartMuX_pinS3, OUTPUT);
+//	fileDescriptor = serialOpen (hwUart, 9600);
 }
 
 UartMux::~UartMux() {
-
+	this->currentAddress = adr_NOUSE_8;
 }
 
 
@@ -23,18 +31,15 @@ UartMux::~UartMux() {
 k *
  */
 void UartMux::setAdr(MuxAdr_t muxAdresa){
-	muxAdresa--;	// oduzmem 1 jer na stampanoj plocici pise [1..8] a hardverski je [0..7]
-	muxAdresa = muxAdresa % 8;
-	currentAddress = muxAdresa;
-	uint16_t rez = 0;
-	rez = (muxAdresa & 0b001) ? (rez | UartMuX_s1_Pin) : rez;
-	rez = (muxAdresa & 0b010) ? (rez | UartMuX_s2_Pin) : rez;
-	rez = (muxAdresa & 0b100) ? (rez | UartMuX_s3_Pin) : rez;
+	muxAdresa--;					// oduzmem 1 jer na stampanoj plocici pise [1..8] a hardverski je [0..7]
+	muxAdresa = muxAdresa % 8;		// najveci broj je 7
+	this->currentAddress = muxAdresa;
 
-	// stm32 specific
-	HAL_GPIO_WritePin(GPIOB, UartMuX_s1_Pin|UartMuX_s2_Pin|UartMuX_s3_Pin, GPIO_PIN_RESET);	// write zero
-	HAL_GPIO_WritePin(GPIOB, rez, GPIO_PIN_SET);				// set only necessary bits
-
+	// rpi specific
+	// wiringPi specific
+	digitalWrite(UartMuX_pinS1, (muxAdresa & 0b001) ? HIGH : LOW);
+	digitalWrite(UartMuX_pinS2, (muxAdresa & 0b010) ? HIGH : LOW);
+	digitalWrite(UartMuX_pinS3, (muxAdresa & 0b100) ? HIGH : LOW);
 }
 
 
@@ -42,3 +47,6 @@ MuxAdr_t UartMux::getAdr() {
 	return currentAddress;
 }
 
+void UartMux::uartSend(int fileDescriptor, char chars[]) {
+	serialPuts(fileDescriptor, chars);
+}

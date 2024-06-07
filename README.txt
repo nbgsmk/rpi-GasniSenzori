@@ -18,3 +18,15 @@ https://www.youtube.com/watch?v=ykbr6YVww8I
 
 https://www.youtube.com/watch?v=HxNHlhv74tA
 
+
+--------------------------------------
+
+WiringPI 
+
+SETUP, INSTALL
+--------------
+https://roboticsbackend.com/introduction-to-wiringpi-for-raspberry-pi/
+
+GPIO
+----
+https://learn.sparkfun.com/tutorials/raspberry-gpio/gpio-pinout

@@ -13,32 +13,34 @@
 #include <algorithm>
 #include <cstdio>
 
+// rpi wiringpi specific
+#include <wiringPi.h>
+#include <wiringSerial.h>
+int fd;
+int serialStat;
+
+
 using namespace std;
 
 /**
  * Constructor to create sensor and perform minimal initialization
  */
-GasSensor::GasSensor(int muxAddress) {
+GasSensor::GasSensor(MuxAdr_t muxAddress) {
 	this->muxAddress = muxAddress;
-
+	this->runningLed = true;
+//	if (fd = serialOpen ("/dev/ttyAMA0", 9600)){};		// todo
+//	if (wiringPiSetup () == -1){}						// todo
+	fd = serialOpen ("/dev/ttyAMA0", 9600);
+	wiringPiSetup ();
 }
 
 GasSensor::~GasSensor() {
-
+	serialClose(fd);
 }
 
 
 // stm32 specific
 void GasSensor::setSensorUart(int uart) {
-//	hUrt = sensorUart; // dummy todo
-
-
-
-}
-
-// stm32 specific
-void GasSensor::setDebugUart(int uart) {
-//	hUrt = sensorUart; // dummy todo
 
 }
 
@@ -105,13 +107,7 @@ void GasSensor::getSensorProperties_D7() {
 		sensorProperties.decimals = decimals;		// dobije se 4. Jel' moguce da je tolika tacnost?
 		sensorProperties.sign = sign;				// dobije se 0 = "negative inhibition". Koji li im djavo to znaci??
 
-
 	} else {
-		// stm32 specific
-		// ENABLE EXCEPTIONS for stm32
-		// Right click the project -> Properties -> C/C++ Build -> Settings -> Tool Settings -> MCU G++ Compiler -> Miscellaneous
-		// add flag -fexceptions
-		printf("Wrong sensor type! Expected 0x19, got |%04x|", tip);
 		throw std::invalid_argument("Wrong sensor type! Expected 0x19, got ??");		// FIXME dodati ovde hex parametar tip, izbaciti printf
 	}
 
@@ -283,33 +279,34 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	uint8_t txArr[txStruct.cmd.size()];
 	std::copy(txStruct.cmd.begin(), txStruct.cmd.end(), txArr);
 
-	// stm32 specific
+	// wiringpi specific
 	// send bytes to debug port
-    uint8_t c[] = {"\n cmd="};
-    HAL_UART_Transmit(1, c, sizeof(c), 500);
-    HAL_UART_Transmit_DBG(2, c, sizeof(c), 500);
+//    uint8_t c[] = {"\n cmd="};
+//    serialPuts(fd, txArr);
+//    HAL_UART_Transmit_DBG(2, c, sizeof(c), 500);
 
 
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
-    HAL_UART_Transmit(hUrt, c, sizeof(c), 500);
+    for (long unsigned int i = 0; i < sizeof(txArr); ++i) {
+    	serialPutchar(fd, txArr[i]);
+	};
 	if (txStruct.expectedReplyLen > 0) {
-		if(HAL_UART_Receive(1, rxB, 100, 500)==HAL_OK){
-			for (int i = 0; i < txStruct.expectedReplyLen; ++i) {
-				reply.push_back(rxB[i]);
-			}
-
+		while(serialDataAvail(fd)){
+			int x = serialGetchar(fd);
+			reply.push_back(x);
+		};
 
 		    uint8_t r[] = " reply=";
-		    HAL_UART_Transmit(hUrtDbg, r, sizeof(r), 500);
-		    HAL_UART_Transmit(hUrtDbg, rxB, txStruct.expectedReplyLen, 500);
-		    uint8_t c[] = ";\n";
-		    HAL_UART_Transmit(hUrtDbg, c, sizeof(c), 500);
+//		    HAL_UART_Transmit(hUrtDbg, r, sizeof(r), 500);
+//		    HAL_UART_Transmit(hUrtDbg, rxB, txStruct.expectedReplyLen, 500);
+//		    uint8_t c[] = ";\n";
+//		    HAL_UART_Transmit(hUrtDbg, c, sizeof(c), 500);
 		} else {
 		    uint8_t jbg[] = "\n no reply \n";
-		    HAL_UART_Transmit(hUrtDbg, jbg, sizeof(jbg), 500);
+//		    HAL_UART_Transmit(hUrtDbg, jbg, sizeof(jbg), 500);
 		}
-	}
+
 	return reply;
 }
 

@@ -10,6 +10,7 @@
 #include <array>
 #include <cstring>
 #include <stdexcept>
+#include "UartMux.h"
 
 #include "GasSensor_TB200B_TB600BC_datasheet.h"
 
@@ -19,7 +20,7 @@
 class GasSensor {
 
 public:
-	GasSensor(int muxAddress);
+	GasSensor(MuxAdr_t muxAddress);
 	virtual ~GasSensor();
 
 	uint8_t rxB[50];							// bytes received from UART
@@ -63,10 +64,8 @@ private:
 
 
 	// STOPSHIP hardware dummy
-	void HAL_UART_Transmit(int uartRef, uint8_t c[], int len, int timeout_mS);
+//	void HAL_UART_Transmit(int uartRef, uint8_t c[], int len, int timeout_mS);
 	void HAL_UART_Transmit_DBG(int uartRef, uint8_t c[], int len, int timeout_mS);
-    int hUrt = 1;
-    int hUrtDbg = 2;
 	int HAL_UART_Receive(int uartRef, uint8_t rxB[], int len, int timeout_mS);
 	int HAL_OK = 1;
 

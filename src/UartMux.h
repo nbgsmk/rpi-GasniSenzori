@@ -26,12 +26,17 @@
 // 1 1 1	8
 //
 ///////////////////////
+#define adr_CO 		2
+#define adr_H2S		4
+#define adr_O2		5
+#define adr_itd		7
+#define adr_NOUSE_8	8
 
-#define CO_ADR 		3
-#define H2S_ADR		5
-#define O2_ADR		7
-#define itd_adr		8
-
+// rpi specific
+#define UartMuX_pinS1	 4	// gpio23 = wiringPi 4
+#define UartMuX_pinS2	 5	// gpio24 = wiringPi 4
+#define UartMuX_pinS3	 6	// gpio25 = wiringPi 4
+#define hwUart			"/dev/ttyAMA0"
 
 typedef uint8_t MuxAdr_t;
 
@@ -41,20 +46,15 @@ public:
 	virtual ~UartMux();
 
 	MuxAdr_t currentAddress;
+	int fileDescriptor;
 
 	void setAdr(MuxAdr_t adresa);		// prozovi uart mux adresu
 	MuxAdr_t getAdr();					// koja je trenutna adresa?
 
-private:
+	void uartSend(int fileDescriptor, char chars[]);
 
-	// STOPSHIP dummy
-	#define UartMuX_s1_Pin 1
-	#define UartMuX_s2_Pin 2
-	#define UartMuX_s3_Pin 3
-	void HAL_GPIO_WritePin(int port, int pin, int state);
-	int GPIOB = 1;
-	int GPIO_PIN_RESET = 0;
-	int GPIO_PIN_SET = 1;
+
+private:
 
 
 };

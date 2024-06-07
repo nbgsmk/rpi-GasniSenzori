@@ -12,7 +12,7 @@
 
 // hardware driver
 #include "UartMux.h"
-//#include <wiringPi.h>
+#include <wiringPi.h>
 
 // pomocnici
 #include "Blinkovi.h"
@@ -24,12 +24,16 @@ using namespace std;
 int main() {
 	cout << "Hey hey" << endl; // prints Hey hey
 
+//	wiringPiSetupGpio();
+
+
+
 	while (1) {
 
 		Blinkovi *b = new Blinkovi();
 		UartMux *mux = new UartMux();
-		GasSensor *co = new GasSensor(3);
-		GasSensor *h2s = new GasSensor(5);
+		GasSensor *co = new GasSensor(adr_CO);
+		GasSensor *h2s = new GasSensor(adr_H2S);
 
 		HAL_Delay(2000);
 		b->trep(50, 200);
@@ -47,13 +51,13 @@ int main() {
 				b->trepCnt(blok, 5, 250);
 
 				// CO senzor
-				mux->setAdr(CO_ADR);
+				mux->setAdr(adr_CO);
 				co->setSensorUart(1);
 				co->setDebugUart(2);
 				co->init(2000);
 
 				for (;;) {
-					mux->setAdr(CO_ADR);
+					mux->setAdr(adr_CO);
 					for (int i = 0; i < 5; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {
@@ -78,7 +82,7 @@ int main() {
 					b->trep(5, 50);
 					b->trep(5, 50);
 					b->trep(5, 50);
-					mux->setAdr(H2S_ADR);
+					mux->setAdr(adr_H2S);
 					HAL_Delay(3000);
 
 				}
@@ -116,16 +120,16 @@ int main() {
 				for ( ; ; ) {
 					b->trepCnt(blok, 5, 250);
 
-					mux->setAdr(CO_ADR);
+					mux->setAdr(adr_CO);
 					HAL_Delay(1000);
 
-					mux->setAdr(H2S_ADR);
+					mux->setAdr(adr_H2S);
 					HAL_Delay(1000);
 
-					mux->setAdr(O2_ADR);
+					mux->setAdr(adr_O2);
 					HAL_Delay(1000);
 
-					mux->setAdr(itd_adr);
+					mux->setAdr(adr_itd);
 					HAL_Delay(1000);
 				}
 				break;
