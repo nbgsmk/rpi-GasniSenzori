@@ -6,14 +6,9 @@
  */
 
 
-// C++ standard
-#include <unistd.h>
-
-// hardware driver
-#include <wiringPi.h>
-
 // pomocnici
 #include "Blinkovi.h"
+
 
 
 Blinkovi::Blinkovi() {
@@ -37,13 +32,10 @@ void Blinkovi::ledoff(void){
 }
 
 void Blinkovi::ledtogl(void) {
-	auto x = digitalRead(LED_pin) == HIGH;
-	if(x==HIGH){
-		digitalWrite(LED_pin, LOW);
-	} else {
-		digitalWrite(LED_pin, HIGH);
-	}
+	int p = digitalRead(LED_pin)==HIGH;
+	digitalWrite(LED_pin, (p ? LOW : HIGH));
 }
+
 
 void Blinkovi::trep(uint32_t ticks_on, uint32_t ticks_off){
 	ledon();
@@ -71,6 +63,5 @@ void Blinkovi::trepCntPer(uint32_t count, uint32_t ticks_on, uint32_t ticks_off,
 		ostatak = period - (count * (ticks_on + ticks_off));
 	}
 	usleep(ostatak * 1000);
-
 }
 

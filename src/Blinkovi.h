@@ -8,9 +8,16 @@
 #ifndef SRC_BLINKOVI_H_
 #define SRC_BLINKOVI_H_
 
-#define LED_pin	 6	// gpio22 = wiringPi 3
+
+// C++ standard
+#include <unistd.h>
 #include <stdint.h>
 
+// hardware driver
+#include <wiringPi.h>
+
+
+#define LED_pin	 6	// gpio22 = wiringPi 3
 
 class Blinkovi {
 public:
@@ -24,8 +31,6 @@ public:
 	void trep(uint32_t ticks_on, uint32_t ticks_off);
 	void trepCnt(uint32_t count, uint32_t ticks_on, uint32_t ticks_off);
 	void trepCntPer(uint32_t count, uint32_t ticks_on, uint32_t ticks_off, uint32_t period);
-
-	uint32_t millisecondsToTicks(uint32_t);
 
 
 };
