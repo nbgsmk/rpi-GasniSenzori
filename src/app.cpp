@@ -8,15 +8,17 @@
 
 
 // C++
+#include "app.h"
+#include <cstdint>
 #include <iostream>
-#include <unistd.h>
-#include <stdint.h>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 // hardware driver
 #include "UartMux.h"
 #include <wiringPi.h>
+#include <wiringSerial.h>
 #include "GasSensor.h"
 
 // pomocnici
@@ -26,9 +28,17 @@
 using namespace std;
 
 int main() {
-	cout << "Hey hey" << endl; // prints Hey hey
+	cout << "Hey hey" << endl;
 
-	wiringPiSetupGpio();
+	fileDescriptor = serialOpen (hwUart, 9600);
+	wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
+	pinMode(UartMuX_pinS1, OUTPUT);
+	pinMode(UartMuX_pinS2, OUTPUT);
+	pinMode(UartMuX_pinS3, OUTPUT);
+
+	//	if (fd = serialOpen ("/dev/ttyAMA0", 9600)){};		// todo
+	//	if (wiringPiSetup () == -1){}						// todo
+
 
 	while (1) {
 
@@ -53,13 +63,11 @@ int main() {
 				b->trepCnt(blok, 5, 250);
 
 				// CO senzor
-				mux->setAdr(adr_CO);
-//				co->setSensorUart(1);
-//				co->setDebugUart(2);
+				mux->setAddr(5);
 				co->init(2000);
 
 				for (;;) {
-					mux->setAdr(adr_CO);
+					mux->setAddr(adr_CO);
 					for (int i = 0; i < 5; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {
@@ -84,7 +92,7 @@ int main() {
 					b->trep(5, 50);
 					b->trep(5, 50);
 					b->trep(5, 50);
-					mux->setAdr(adr_H2S);
+					mux->setAddr(adr_H2S);
 					usleep(3000 * 1000);
 
 				}
@@ -101,10 +109,8 @@ int main() {
 				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
-//					co->setSensorUart(2);
-//					co->setDebugUart(2);
-					uint8_t s[] = {'z', 'e', 'c'};
-	//				uint8_t s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
+					char s[] = {'z', 'e', 'c'};
+//					char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
 					co->sendRawCommand(s, sizeof(s));
 				}
@@ -122,16 +128,16 @@ int main() {
 				for ( ; ; ) {
 					b->trepCnt(blok, 5, 250);
 
-					mux->setAdr(adr_CO);
+					mux->setAddr(adr_CO);
 					usleep(1000 * 1000);
 
-					mux->setAdr(adr_H2S);
+					mux->setAddr(adr_H2S);
 					usleep(1000 * 1000);
 
-					mux->setAdr(adr_O2);
+					mux->setAddr(adr_O2);
 					usleep(1000 * 1000);
 
-					mux->setAdr(adr_itd);
+					mux->setAddr(adr_itd);
 					usleep(1000 * 1000);
 				}
 				break;

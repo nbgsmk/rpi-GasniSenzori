@@ -9,15 +9,7 @@
 #define SRC_BLINKOVI_H_
 
 
-// C++ standard
-#include <unistd.h>
-#include <stdint.h>
-
-// hardware driver
-#include <wiringPi.h>
-
-
-#define LED_pin	 6	// gpio22 = wiringPi 3
+#define LED_pin	 22	// gpio22
 
 class Blinkovi {
 public:

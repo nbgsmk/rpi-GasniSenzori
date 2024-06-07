@@ -8,9 +8,10 @@
 
 #define SENSOR_DATA_ERROR (int)-1
 
+
 	struct CmdStruct_t{
 		std::vector<uint8_t> cmd;
-		int expectedReplyLen;
+		unsigned int expectedReplyLen;
 	};
 
 	///////////////////////////////////////////////////////////////

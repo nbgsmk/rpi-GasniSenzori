@@ -6,7 +6,7 @@
  */
 
 // C++
-#include <stdint.h>
+#include <cstdint>
 
 // rpi specific
 #include <wiringPi.h>

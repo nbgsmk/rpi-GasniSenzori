@@ -5,6 +5,12 @@
  *      Author: peca
  */
 
+// C++ standard
+#include <unistd.h>
+#include <cstdint>
+
+// hardware driver
+#include <wiringPi.h>
 
 // pomocnici
 #include "Blinkovi.h"

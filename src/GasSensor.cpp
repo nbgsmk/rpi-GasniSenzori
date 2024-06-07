@@ -1,19 +1,25 @@
 /*
- * Driver for "TB200B_TB600BC_datasheet" sensor
+ * Driver for "GasSensor_TB200B_TB600BC_datasheet"
  *
  */
 
 // C++
 #include <bits/stdint-uintn.h>
 #include <algorithm>
+#include <array>
 #include <cstdio>
+#include <cstring>
+#include <stdexcept>
+#include <cstdint>
 #include <unistd.h>
-
+#include <vector>
 
 // hardware driver
 #include "GasSensor.h"
+#include "UartMux.h"
 
-// rpi wiringpi specific
+// rpi specific
+// wiringpi specific
 #include <wiringPi.h>
 #include <wiringSerial.h>
 
@@ -29,10 +35,7 @@ using namespace std;
 GasSensor::GasSensor(MuxAdr_t muxAddress) {
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
-//	if (fd = serialOpen ("/dev/ttyAMA0", 9600)){};		// todo
-//	if (wiringPiSetup () == -1){}						// todo
-	fd = serialOpen ("/dev/ttyAMA0", 9600);
-	wiringPiSetup ();
+
 }
 
 GasSensor::~GasSensor() {
@@ -63,7 +66,7 @@ void GasSensor::getSensorProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
-	vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
+	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
 
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0xD7);	// reply header ok?
 	uint8_t tip = reply.at(2);
@@ -158,7 +161,7 @@ int GasSensor::getGasConcentrationPpm() {
  */
 int GasSensor::getGasConcentrationMgM3() {
 	uint16_t rezultat = 0;
-	vector<uint8_t> reply = send(cmdReadGasConcentration);
+	std::vector<uint8_t> reply = send(cmdReadGasConcentration);
 
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
 	if (hdr) {
@@ -251,8 +254,7 @@ void GasSensor::setLedOff() {
  * Sensor activity led will be off
  */
 bool GasSensor::getLedStatus() {
-	// TODO mogao bi da vraca enum on, off, error
-	bool rezultat;
+	bool rezultat = false;
 	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
 	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x8A);		// reply header ok?
 	if (hdr) {
@@ -309,8 +311,8 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 
 
-void GasSensor::sendRawCommand(const uint8_t *plainTxt, uint16_t size){
-	std::vector<uint8_t> s(plainTxt, plainTxt + size);
+void GasSensor::sendRawCommand(const char *rawBytes, unsigned int size){
+	vector<uint8_t> s(rawBytes, rawBytes + size);
 	CmdStruct_t cmd = { s, size };
 	send(cmd);
 }
