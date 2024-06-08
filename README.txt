@@ -77,5 +77,113 @@ $ g++ myapp.cpp -lWiringPi
 
 
 
+CROSS COMPILATION TOOLCHAIN
+---------------------------
+
+development machine:
+
+check sudo privileges
+$ visudo
+...tbd
+
+
+update sources list
+$ sudo su -
+# cd /etc/apt/sources.list.d
+# nano crostools.list
+-> dodati ovo
+deb http://emdebian.org/tools/debian jessie main
+-> snimiti
+
+# apt-get install curl
+# apt-get install build-essential
+# curl http://emdebian.org/tools/debian/embedded-toolchain-archive.key | sudo apt-key add -
+# exit
+-> back to regular user
+
+Na rpi proverimo koja je cpu arhitektura
+$ ssh rpi.local
+...password
+$ uname -a
+$ uname -m
+aarch64
+$ dpkg --print-architecture
+arm64
+
+
+Vratimo se nazad na development masinu: 
+koji native toolchain imamo? 
+$ dpkg --print-architecture
+amd64 	- to je intel/amd pc
+
+koje cross compile toolchainove imamo?
+$ dpkg --print-foreign-architectures
+i386	- valjda intel/amd
+armhf	- arm hard float
+
+$ sudo apt-get update
+
+Dodati toolchain za arhitekturu koja je prikazana na rpi
+(u nasem slucaju arm64 - ono sto je prikazao rpi)
+$ sudo apt-get install crossbuild-essential-arm64 - 
+ili 
+$ sudo apt-get install crossbuild-essential-armhf
+
+dpkg --add-architecture armhf
+
+To je to!
+Test
+
+napraviti test.cpp
+
+kompajlirati za intel/amd
+$ g++ test.cpp -o amd.out
+$ ./amd.out
+-treba da radi
+
+kompajlirati za arm
+$ arm-linux-gnueabihf-g++ test.cpp -o aeabihf.out
+$ arm-linux-gnueabihf-g++ test.cpp -o aeabihf_stat.out -static
+
+dobiju se dinamicki i staticki linkovani exec fajlovi
+
+ako se pokrene bilo koji na amd/intel masini, treba da odgovori 
+-bash: ./aeabihf.out: cannot execute binary file: Exec format error
+
+prebaciti oba na rpi i pokrenuti, ali sada, na rpi:
+amd.out - daje exec format error
+ali zato
+aeabihf... - treba da radi
+
+Ako mu se ne dopada dinamicki linkovan fajl, odgovor je npr 
+-bash: ./aeabihf_stat.out: cannot execute: required file not found
+
+
+
+
+
+
+
+
+
+Ko je procitao do ovde, svaka mu cast. 
+Za nagradu, neka pogleda https://www.youtube.com/watch?v=T9yFyWsyyGk
+Tamo sve lepo pise.
+
+REMOTE DEBUGGING
+----------------
+
+Pratiti pomenuti klip od oko 20:30 pa do kraja!
+
+rpi:
+$ sudo apt-get install gdbserver
+
+developer:
+$ sudo apt-get install gdb-multiarch
+$ cd __gde je eclipse workspace__
+
+Napraviti fajl .gdbinit i upisati set architecture arm
+$ echo "set architecture arm" >> .gdbinit
+
 
 

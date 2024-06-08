@@ -16,9 +16,9 @@
 #include <vector>
 
 // hardware driver
-#include "UartMux.h"
 #include <wiringPi.h>
 #include <wiringSerial.h>
+#include "UartMux.h"
 #include "GasSensor.h"
 
 // pomocnici
