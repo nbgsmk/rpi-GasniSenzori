@@ -75,10 +75,26 @@ This step is IDE dependent.
 If compiling from command line add flag -lWiringPi
 $ g++ myapp.cpp -lWiringPi
 
+VAZNO!! 
+$ sudo raspi-config -> interface options -> serial port:
+	- login shell accessible = NO
+	- serial port hardware enabled = YES
+
+$ gpio readall -> rxd/txd pinovi su "ALT5"
+
+Mozda je obsolete:
+https://projects.drogon.net/raspberry-pi/wiringpi/serial-library/
 
 
 CROSS COMPILATION TOOLCHAIN
 ---------------------------
+
+++++++++++++++++++++
+TODO add external library
+https://www.eclipse.org/forums/index.php/t/238028/
+https://www.eclipse.org/forums/index.php?t=msg&th=238028&goto=721572&#msg_721572
+++++++++++++++++++++
+
 
 development machine:
 

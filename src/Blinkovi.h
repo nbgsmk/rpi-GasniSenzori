@@ -9,7 +9,7 @@
 #define SRC_BLINKOVI_H_
 
 
-#define LED_pin	 22	// gpio22
+#define LED_pin	 18	// gpio18
 
 class Blinkovi {
 public:

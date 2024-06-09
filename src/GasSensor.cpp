@@ -23,8 +23,7 @@
 #include <wiringPi.h>
 #include <wiringSerial.h>
 
-int fd;
-int serialStat;
+
 
 
 using namespace std;
@@ -32,14 +31,15 @@ using namespace std;
 /**
  * Constructor to create sensor and perform minimal initialization
  */
-GasSensor::GasSensor(MuxAdr_t muxAddress) {
+GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle) {
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
+	this->uartHandle = uartHandle;
 
 }
 
 GasSensor::~GasSensor() {
-	serialClose(fd);
+	serialClose(this->uartHandle);
 }
 
 
@@ -288,11 +288,11 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
     for (long unsigned int i = 0; i < sizeof(txArr); ++i) {
-    	serialPutchar(fd, txArr[i]);
+    	serialPutchar(this->uartHandle, txArr[i]);
 	};
 	if (txStruct.expectedReplyLen > 0) {
-		while(serialDataAvail(fd)){
-			int x = serialGetchar(fd);
+		while(serialDataAvail(this->uartHandle)){
+			int x = serialGetchar(this->uartHandle);
 			reply.push_back(x);
 		};
 

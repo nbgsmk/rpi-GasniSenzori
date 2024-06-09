@@ -9,9 +9,19 @@
 #define APP_H_
 
 
-int fileDescriptor;
+int uartFileDescriptor;
 
-#define hwUart			"/dev/ttyAMA0"
+/*
+ * rpi 4:
+ * zovu se /dev/tty0, tty1 ...
+ * /dev/serial0		ne postoji
+ * /dev/ttyS0		ne postoji
+ *
+ * rpi zero:
+ * /dev/serial0	symlink-> /dev/ttyS0
+ * /dev/serial1	symlink-> /dev/ttyAMA0
+ */
+#define hwUart			"/dev/serial0"	// rpi4 = NE POSTOJI
 
 
 #endif /* APP_H_ */

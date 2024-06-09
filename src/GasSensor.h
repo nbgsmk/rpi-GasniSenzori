@@ -11,12 +11,11 @@
 #include "UartMux.h"
 #include "GasSensor_TB200B_TB600BC_datasheet.h"
 
-#define MUX_ADR 0b001			// CONFIG mux adresa ovog senzora
 
 class GasSensor {
 
 public:
-	GasSensor(MuxAdr_t muxAddress);
+	GasSensor(MuxAdr_t muxAddress, int uartHandle);
 	virtual ~GasSensor();
 
 	uint8_t rxB[50];							// bytes received from UART
@@ -42,6 +41,7 @@ public:
 private:
 	int muxAddress;
 	bool runningLed;
+	int uartHandle;
 	struct {
 		uint8_t tip;
 		uint16_t maxRange;

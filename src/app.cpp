@@ -30,7 +30,7 @@ using namespace std;
 int main() {
 	cout << "Hey hey" << endl;
 
-	fileDescriptor = serialOpen (hwUart, 9600);
+	uartFileDescriptor = serialOpen (hwUart, 9600);
 	wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
 	pinMode(UartMuX_pinS1, OUTPUT);
 	pinMode(UartMuX_pinS2, OUTPUT);
@@ -44,8 +44,8 @@ int main() {
 
 		Blinkovi *b = new Blinkovi();
 		UartMux *mux = new UartMux();
-		GasSensor *co = new GasSensor(adr_CO);
-		GasSensor *h2s = new GasSensor(adr_H2S);
+		GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
+		GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
 
 		usleep(2000 * 1000);
 		b->trep(50, 200);
@@ -67,6 +67,7 @@ int main() {
 				co->init(2000);
 
 				for (;;) {
+					cout << "talk to CO \n";
 					mux->setAddr(adr_CO);
 					for (int i = 0; i < 5; ++i) {
 						b->trep(5, 50);
@@ -86,14 +87,24 @@ int main() {
 					float celsius = co->getTemperature();
 					float rh = co->getRelativeHumidity();
 
+					cout << "gas ppm " << ppm << "\n";
+					cout << "gas mg/m3 " << mg << "\n";
+					cout << "gas percentage of max scale " << percOfMax << "\n";
+					cout << "temperature " << celsius << " C \n";
+					cout << "humidity " << rh << " % \n";
+					cout << "done\n";
+
+
 					usleep(2000 * 1000);
 
 					// pretvaramo se da imamo jos neki senzor
 					b->trep(5, 50);
 					b->trep(5, 50);
 					b->trep(5, 50);
+					cout << "talk to H2S " << "\n";
 					mux->setAddr(adr_H2S);
 					usleep(3000 * 1000);
+					cout << "done\n";
 
 				}
 				break;
@@ -106,13 +117,14 @@ int main() {
 			// TALK TO DEBUG UART
 			/////////////////////
 			case 2: {
-				for (;;) {
+				for ( ; ; ) {
 					b->trepCnt(blok, 5, 250);
 
-					char s[] = {'z', 'e', 'c'};
+					const char s[] = {'l', 'e', 'v', 'o', ' ', 'd', 'e', 's', 'n', 'o', '\n'};
 //					char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
 					co->sendRawCommand(s, sizeof(s));
+					usleep(1000 * 1000);
 				}
 				break;
 			}
@@ -128,10 +140,10 @@ int main() {
 				for ( ; ; ) {
 					b->trepCnt(blok, 5, 250);
 
-					mux->setAddr(adr_CO);
+					mux->setAddr(2);		// raw num
 					usleep(1000 * 1000);
 
-					mux->setAddr(adr_H2S);
+					mux->setAddr(adr_CO);	// logical address
 					usleep(1000 * 1000);
 
 					mux->setAddr(adr_O2);

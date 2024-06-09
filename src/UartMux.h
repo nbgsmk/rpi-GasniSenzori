@@ -27,7 +27,7 @@
 ///////////////////////
 // Adrese senzora
 //      moj_naziv	S[1..8] (broj na plocici uart mux-a)
-#define adr_CO 			2
+#define adr_CO 			3
 #define adr_H2S			4
 #define adr_O2			5
 #define adr_itd			7
@@ -69,9 +69,9 @@
  * wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
  * wiringPiSetup();		// Initializes wiringPi using wiringPi's simlified number system.
  */
-#define UartMuX_pinS1	 23	// gpio23 = wiringPi 4
-#define UartMuX_pinS2	 24	// gpio24 = wiringPi 4
-#define UartMuX_pinS3	 25	// gpio25 = wiringPi 4
+#define UartMuX_pinS1	 4	// gpio4
+#define UartMuX_pinS2	 3	// gpio3
+#define UartMuX_pinS3	 2	// gpio2
 
 typedef unsigned int MuxAdr_t;
 
