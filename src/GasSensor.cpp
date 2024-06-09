@@ -280,23 +280,29 @@ bool GasSensor::getLedStatus() {
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
+//	UartMux *mux = new UartMux();
+//	mux->setAddr(this->uartHandle);
+
+
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
     reply.clear();
 
-	cout << "send sajz " << txStruct.cmd.size() << ", expect " << txStruct.expectedReplyLen << endl;
+//	cout << "send sajz " << txStruct.cmd.size() << ", expect " << txStruct.expectedReplyLen << endl;
     for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
     	//cout << "send loop " << i << ", " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << endl;
     	serialPutchar(this->uartHandle, txStruct.cmd[i]);
+    	// At 9600 baud, the bit time is about 104 microseconds which makes each character sent take 1.04 milliseconds
+    	usleep(1000);	// plenty of time between characters
 	};
 
 	if (txStruct.expectedReplyLen > 0) {
-		cout << "cekam " << txStruct.expectedReplyLen << endl;
+//		cout << "cekam " << txStruct.expectedReplyLen << endl;
 		unsigned int mS = 300;
-		cout << "usleep " << mS << "mS" << endl;
+//		cout << "usleep " << mS << "mS" << endl;
 		usleep(mS * 1000);
 		int avail = serialDataAvail(this->uartHandle);
-		cout << "serial avail " << avail << endl;
+//		cout << "serial avail " << avail << endl;
 		while(serialDataAvail(this->uartHandle)){
 			int x = serialGetchar(this->uartHandle);
 //			cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
