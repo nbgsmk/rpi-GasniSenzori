@@ -8,9 +8,10 @@
 #include <algorithm>
 #include <array>
 #include <cstdio>
-#include <cstring>
-#include <stdexcept>
 #include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
 #include <unistd.h>
 #include <vector>
 
@@ -50,8 +51,11 @@ GasSensor::~GasSensor() {
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	usleep(waitSensorStartup_mS * 1000);
 
+	cout << "set passive" << endl;
 	send(cmdSetPassiveMode);
-	send(cmdRunningLightOff);
+	cout << "set running light" << endl;
+	send(cmdRunningLightOn);
+	cout << "get props" << endl;
 	getSensorProperties_D7();
 
 //	send(cmdSetActiveMode);
@@ -275,37 +279,35 @@ bool GasSensor::getLedStatus() {
  * send raw command to sensor and wait for reply
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
-	uint8_t txArr[txStruct.cmd.size()];
-	std::copy(txStruct.cmd.begin(), txStruct.cmd.end(), txArr);
-
-	// wiringpi specific
-	// send bytes to debug port
-//    uint8_t c[] = {"\n cmd="};
-//    serialPuts(fd, txArr);
-//    HAL_UART_Transmit_DBG(2, c, sizeof(c), 500);
-
 
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
-    for (long unsigned int i = 0; i < sizeof(txArr); ++i) {
-    	serialPutchar(this->uartHandle, txArr[i]);
+    reply.clear();
+
+	cout << "send sajz " << txStruct.cmd.size() << ", expect " << txStruct.expectedReplyLen << endl;
+    for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
+    	//cout << "send loop " << i << ", " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << endl;
+    	serialPutchar(this->uartHandle, txStruct.cmd[i]);
 	};
+
 	if (txStruct.expectedReplyLen > 0) {
+		cout << "cekam " << txStruct.expectedReplyLen << endl;
+		unsigned int mS = 300;
+		cout << "usleep " << mS << "mS" << endl;
+		usleep(mS * 1000);
+		int avail = serialDataAvail(this->uartHandle);
+		cout << "serial avail " << avail << endl;
 		while(serialDataAvail(this->uartHandle)){
 			int x = serialGetchar(this->uartHandle);
+//			cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
 			reply.push_back(x);
 		};
 
-		    uint8_t r[] = " reply=";
-//		    HAL_UART_Transmit(hUrtDbg, r, sizeof(r), 500);
-//		    HAL_UART_Transmit(hUrtDbg, rxB, txStruct.expectedReplyLen, 500);
-//		    uint8_t c[] = ";\n";
-//		    HAL_UART_Transmit(hUrtDbg, c, sizeof(c), 500);
 		} else {
-		    uint8_t jbg[] = "\n no reply \n";
+//		    uint8_t jbg[] = "\n no reply \n";
 //		    HAL_UART_Transmit(hUrtDbg, jbg, sizeof(jbg), 500);
 		}
-
+	serialFlush(this->uartHandle);
 	return reply;
 }
 

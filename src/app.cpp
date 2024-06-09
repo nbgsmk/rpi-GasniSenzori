@@ -47,11 +47,8 @@ int main() {
 		GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
 		GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
 
-		usleep(2000 * 1000);
-		b->trep(50, 200);
-		b->trep(50, 200);
-		b->trep(50, 200);
-
+		b->trep(1000, 1000);
+		b->trep(1000, 1000);
 
 		int blok = 1;
 		switch (blok) {
@@ -63,12 +60,15 @@ int main() {
 				b->trepCnt(blok, 5, 250);
 
 				// CO senzor
-				mux->setAddr(5);
+				cout << "mux " << adr_CO << endl;
+				mux->setAddr(adr_CO);
+				cout << "CO init " << endl;
 				co->init(2000);
+				cout << "ok" << endl;
 
 				for (;;) {
-					cout << "talk to CO \n";
 					mux->setAddr(adr_CO);
+					cout << "talk to CO" << endl;
 					for (int i = 0; i < 5; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {
@@ -101,7 +101,7 @@ int main() {
 					b->trep(5, 50);
 					b->trep(5, 50);
 					b->trep(5, 50);
-					cout << "talk to H2S " << "\n";
+					cout << "talk to H2S - FEJK" << "\n";
 					mux->setAddr(adr_H2S);
 					usleep(3000 * 1000);
 					cout << "done\n";
