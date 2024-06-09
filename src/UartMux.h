@@ -31,7 +31,7 @@
 #define adr_H2S			4
 #define adr_O2			5
 #define adr_itd			7
-#define adr_DONOTUSE_8	8	// neka ovo bude pocetna, gde nista nije povezano
+#define adr_DONOTUSE_8	8	// pocetno, izgleda da su svi pinovi floating high, tj adresa 0x111 iliti, po njegovoj numeraciji port 8
 
 
 // rpi specific

@@ -7,6 +7,7 @@
 
 // C++
 #include <cstdint>
+#include <unistd.h>
 
 // rpi specific
 #include <wiringPi.h>
@@ -41,6 +42,7 @@ void UartMux::setAddr(MuxAdr_t muxAdresa){
 	digitalWrite(UartMuX_pinS1, (muxAdresa & 0b001) ? HIGH : LOW);
 	digitalWrite(UartMuX_pinS2, (muxAdresa & 0b010) ? HIGH : LOW);
 	digitalWrite(UartMuX_pinS3, (muxAdresa & 0b100) ? HIGH : LOW);
+	usleep(100 * 1000);		// generous wait for pins to settle
 }
 
 

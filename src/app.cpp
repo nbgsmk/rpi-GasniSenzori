@@ -68,8 +68,9 @@ int main() {
 
 				for (;;) {
 					mux->setAddr(adr_CO);
-					cout << "talk to CO" << endl;
-					for (int i = 0; i < 5; ++i) {
+					cout << "----- talk to CO -----" << endl;
+					cout << "toggle running led a few times, just to know we are here" << endl;
+					for (int i = 0; i < 3; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {
 							co->setLedOff();
@@ -87,12 +88,13 @@ int main() {
 					float celsius = co->getTemperature();
 					float rh = co->getRelativeHumidity();
 
+					cout << "---- measure ----" << endl;
 					cout << "gas ppm " << ppm << "\n";
 					cout << "gas mg/m3 " << mg << "\n";
 					cout << "gas percentage of max scale " << percOfMax << "\n";
 					cout << "temperature " << celsius << " C \n";
 					cout << "humidity " << rh << " % \n";
-					cout << "done\n";
+					cout << "---- done ----" << endl;
 
 
 					usleep(2000 * 1000);
@@ -101,10 +103,11 @@ int main() {
 					b->trep(5, 50);
 					b->trep(5, 50);
 					b->trep(5, 50);
-					cout << "talk to H2S - FEJK" << "\n";
+					cout << "---- talk to H2S ----" << endl;
 					mux->setAddr(adr_H2S);
+					cout << "---- fejk, ne radim nista, samo malo cekam ----" << endl;
 					usleep(3000 * 1000);
-					cout << "done\n";
+					cout << "---- done ----" << endl;
 
 				}
 				break;
