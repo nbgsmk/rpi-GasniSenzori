@@ -280,8 +280,9 @@ bool GasSensor::getLedStatus() {
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
-//	UartMux *mux = new UartMux();
-//	mux->setAddr(this->uartHandle);
+
+	UartMux *mux = new UartMux();
+	mux->setAddr(this->muxAddress);
 
 
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
