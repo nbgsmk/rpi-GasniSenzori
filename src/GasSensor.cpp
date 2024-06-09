@@ -293,7 +293,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
     	//cout << "send loop " << i << ", " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << endl;
     	serialPutchar(this->uartHandle, txStruct.cmd[i]);
     	// At 9600 baud, the bit time is about 104 microseconds which makes each character sent take 1.04 milliseconds
-    	usleep(1000);	// plenty of time between characters
+    	usleep(500);	// plenty of time between characters
 	};
 
 	if (txStruct.expectedReplyLen > 0) {
