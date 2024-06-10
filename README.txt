@@ -75,12 +75,33 @@ This step is IDE dependent.
 If compiling from command line add flag -lWiringPi
 $ g++ myapp.cpp -lWiringPi
 
-VAZNO!! 
+
+VAZNO!!
+RASPI_-CONFIG
 $ sudo raspi-config -> interface options -> serial port:
 	- login shell accessible = NO
 	- serial port hardware enabled = YES
+Nakon ovoga,proveriti stanje gpio pinova u wiringPi:
+$ gpio readall -> rxd/txd pinovi moraju biti "ALT5"
 
-$ gpio readall -> rxd/txd pinovi su "ALT5"
+SSH
+$ sudo raspi-config nonint do_ssh <0/1>
+0: enable SSH
+1: disable SSH
+
+Serial Port
+$ sudo raspi-config nonint do_serial_hw <0/1/2>
+0: enable serial port
+1: disable serial port
+
+Serial console
+sudo raspi-config nonint do_serial_cons <0/1/2>
+0: enable console over serial port
+1: disable console over serial port
+
+
+
+
 
 Mozda je obsolete:
 https://projects.drogon.net/raspberry-pi/wiringpi/serial-library/

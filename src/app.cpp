@@ -1,9 +1,7 @@
 //============================================================================
 // Name        : rpi.cpp
 // Author      : z
-// Version     :
-// Copyright   :
-// Description : Hello World in C++, Ansi-style
+// Description : Demo applikacija pokazuje kako se koristi gasni senzor. I jos par testova.
 //============================================================================
 
 
@@ -33,14 +31,14 @@ using namespace std;
 int main() {
 	cout << "Hey hey" << endl;
 
-	if (  (uartFileDescriptor=serialOpen (hwUart_serial0, 9600)) >= 0  ) {
-		// cout << "uart=" << hwUart_serial0 << endl;
-
-	} else if (  (uartFileDescriptor=serialOpen (hwUart_ttyS0, 9600)) >= 0  ) {
+	if (  (uartFileDescriptor=serialOpen (hwUart_ttyS0, 9600)) >= 0  ) {
 		// cout << "uart=" << hwUart_ttyS0 << endl;
 
+	} else if ( (uartFileDescriptor=serialOpen (hwUart_serial0, 9600)) >= 0 ) {
+		// cout << "uart=" << hwUart_serial0 << endl;
+
 	} else {
-		cerr << "Could not open " << hwUart_serial0 << " or " << hwUart_ttyS0 << endl;
+		cerr << "Could not open " << hwUart_ttyS0 << " or " << hwUart_serial0 << ". We should be running _only_ on rpi zero w, rpi 3 or rpi 4." << endl;
 		std::throw_with_nested(std::runtime_error("Did you forget to run raspi-config to enable serial peripheral?"));
 	}
 
