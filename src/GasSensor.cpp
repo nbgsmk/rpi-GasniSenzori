@@ -280,10 +280,8 @@ bool GasSensor::getLedStatus() {
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
-
 	UartMux *mux = new UartMux();
 	mux->setAddr(this->muxAddress);
-
 
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
@@ -303,7 +301,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 //		cout << "usleep " << mS << "mS" << endl;
 		usleep(mS * 1000);
 		int avail = serialDataAvail(this->uartHandle);
-//		cout << "serial avail " << avail << endl;
+		//		cout << "serial avail " << avail << endl;
 		while(serialDataAvail(this->uartHandle)){
 			int x = serialGetchar(this->uartHandle);
 //			cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;

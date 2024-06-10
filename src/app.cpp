@@ -10,7 +10,10 @@
 // C++
 #include "app.h"
 #include <cstdint>
+#include <errno.h>
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <unistd.h>
 #include <vector>
@@ -30,15 +33,26 @@ using namespace std;
 int main() {
 	cout << "Hey hey" << endl;
 
-	uartFileDescriptor = serialOpen (hwUart, 9600);
-	wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
+	if (  (uartFileDescriptor=serialOpen (hwUart_serial0, 9600)) >= 0  ) {
+		// cout << "uart=" << hwUart_serial0 << endl;
+
+	} else if (  (uartFileDescriptor=serialOpen (hwUart_ttyS0, 9600)) >= 0  ) {
+		// cout << "uart=" << hwUart_ttyS0 << endl;
+
+	} else {
+		cerr << "Could not open " << hwUart_serial0 << " or " << hwUart_ttyS0 << endl;
+		std::throw_with_nested(std::runtime_error("Did you forget to run raspi-config to enable serial peripheral?"));
+	}
+
+	int we = wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
+	if (we == -1) {
+		cerr << "Unable to start wiringPi! Error " << errno << endl;
+		std::throw_with_nested(std::runtime_error("Unable to start wiringPi: %s\n"));
+	}
+
 	pinMode(UartMuX_pinS1, OUTPUT);
 	pinMode(UartMuX_pinS2, OUTPUT);
 	pinMode(UartMuX_pinS3, OUTPUT);
-
-	//	if (fd = serialOpen ("/dev/ttyAMA0", 9600)){};		// todo
-	//	if (wiringPiSetup () == -1){}						// todo
-
 
 	while (1) {
 

@@ -21,7 +21,9 @@ int uartFileDescriptor;
  * /dev/serial0	symlink-> /dev/ttyS0
  * /dev/serial1	symlink-> /dev/ttyAMA0
  */
-#define hwUart			"/dev/serial0"	// rpi4 = NE POSTOJI
+#define hwUart_serial0		"/dev/serial0"	// Postoji na Rpi Zero W. NE POSTOJI na rpi4
+#define hwUart_ttyS0		"/dev/ttyS0"	// Postoji na Rpi Zero W. NE POSTOJI na rpi4
+#define hwUart_AMA0			"/dev/ttyAMA0"	// NE KORISTITI! Izgleda da je za bluetooth. Postoji na Rpi Zero W, kao i na rpi4.
 
 
 #endif /* APP_H_ */
