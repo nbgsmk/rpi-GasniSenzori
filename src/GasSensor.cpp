@@ -7,6 +7,7 @@
 #include <bits/stdint-uintn.h>
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
@@ -24,7 +25,8 @@
 #include <wiringPi.h>
 #include <wiringSerial.h>
 
-
+// pomocnici
+#include <chrono>
 
 
 using namespace std;
@@ -286,32 +288,100 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
     // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
     std::vector<uint8_t> reply;
     reply.clear();
+    serialFlush(this->uartHandle);
 
-//	cout << "send sajz " << txStruct.cmd.size() << ", expect " << txStruct.expectedReplyLen << endl;
+    vector<long unsigned int>  vreme_uS;
+    vreme_uS.reserve(15);	// vece nego sto treba
+    vreme_uS.clear();
+    auto sadTime = std::chrono::high_resolution_clock::now();
+    unsigned int prethodAvail = 0, sadAvail = 0;
+    unsigned int timeOut_mS = 0;
+    unsigned int xCnt = 0;
+
+	 cout << "send sajz " << txStruct.cmd.size() << ", expect " << txStruct.expectedReplyLen << endl;
     for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
-    	//cout << "send loop " << i << ", " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << endl;
+//    	cout << "send loop " << i << ", " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << endl;
     	serialPutchar(this->uartHandle, txStruct.cmd[i]);
-    	// At 9600 baud, the bit time is about 104 microseconds which makes each character sent take 1.04 milliseconds
+    	// At 9600 baud, the 1 bit time is ~104 microseconds, amd 1 full character is 1.04mS
     	usleep(500);	// plenty of time between characters
 	};
 
-	if (txStruct.expectedReplyLen > 0) {
-//		cout << "cekam " << txStruct.expectedReplyLen << endl;
-		unsigned int mS = 300;
-//		cout << "usleep " << mS << "mS" << endl;
-		usleep(mS * 1000);
-		int avail = serialDataAvail(this->uartHandle);
-		//		cout << "serial avail " << avail << endl;
-		while(serialDataAvail(this->uartHandle)){
-			int x = serialGetchar(this->uartHandle);
-//			cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
-			reply.push_back(x);
-		};
 
-		} else {
-//		    uint8_t jbg[] = "\n no reply \n";
-//		    HAL_UART_Transmit(hUrtDbg, jbg, sizeof(jbg), 500);
+
+	// ++++++++++++++++++++++++++++++++++++++++++++ //
+	// ++++++++++++++++++++++++++++++++++++++++++++ //
+	// ++++++++++++++++++++++++++++++++++++++++++++ //
+
+    if (1==2) {
+    	//////////////////////////////////////////
+    	//////////////////////////////////////////
+        //    unsigned int mS = 300;
+        //    usleep(mS * 1000);
+        sadTime = std::chrono::high_resolution_clock::now();
+    	if (txStruct.expectedReplyLen > 0) {
+    		cout << "cekam " << txStruct.expectedReplyLen << endl;
+    		cout << "sad " << sadAvail << " prethodnoAvail " << prethodAvail << endl;
+    		do {
+    			sadAvail = serialDataAvail(this->uartHandle);
+    			if (sadAvail > prethodAvail) {
+    				cout << "prethodnoAvail " << prethodAvail << ", a sada Avail  " << sadAvail << endl;
+    				auto elapsed_ticks = std::chrono::high_resolution_clock::now() - sadTime;
+    				long unsigned int duration_uS = std::chrono::duration_cast<std::chrono::microseconds>(elapsed_ticks).count();
+    				vreme_uS.push_back(duration_uS);
+    				prethodAvail = sadAvail;
+    				while (serialDataAvail(this->uartHandle)) {
+    					int x = serialGetchar(this->uartHandle);
+    					reply.push_back(x);
+    					xCnt++;
+    					 cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
+    				};
+    			} else {
+    				cout << "spavam vec " << timeOut_mS << endl;
+    				usleep(1000);
+    				timeOut_mS++;
+    			}
+
+    			cout << "primljeno xCnt " << xCnt << " timeout je " << timeOut_mS << endl;
+    			cout << "uslov 1 je " << (xCnt <= txStruct.expectedReplyLen) << endl;
+    			cout << "uslov 2 je " << (timeOut_mS < 20) << endl;
+    		} while ( (xCnt <= txStruct.expectedReplyLen) | (timeOut_mS < 20) );
+    		//	reply.shrink_to_fit();
+    		for (long unsigned int i = 0; i < reply.size(); ++i) {
+    			cout << "reply [" << i << "] " << reply.at(i) << ", at " << vreme_uS.at(i);
+    		}
+    	}
+
+
+   	//////////////////////////////////////////
+   	//////////////////////////////////////////
+
+	} else {
+
+		if (txStruct.expectedReplyLen > 0) {
+	//		cout << "cekam " << txStruct.expectedReplyLen << endl;
+			unsigned int mS = 300;
+	//		cout << "usleep " << mS << "mS" << endl;
+			usleep(mS * 1000);
+			int avail = serialDataAvail(this->uartHandle);
+			//		cout << "serial avail " << avail << endl;
+			while (serialDataAvail(this->uartHandle)) {
+				int x = serialGetchar(this->uartHandle);
+	//			cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
+				reply.push_back(x);
+			};
 		}
+
+		//////////////////////////////////////////
+		//////////////////////////////////////////
+
+	}
+
+
+	// ++++++++++++++++++++++++++++++++++++++++++++ //
+	// ++++++++++++++++++++++++++++++++++++++++++++ //
+	// ++++++++++++++++++++++++++++++++++++++++++++ //
+
+
 	serialFlush(this->uartHandle);
 	return reply;
 }
