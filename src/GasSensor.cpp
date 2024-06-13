@@ -65,6 +65,10 @@ GasSensor::~GasSensor() {
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	usleep(waitSensorStartup_mS * 1000);
 
+	// Najbezbolniji nacin da sto ranije otkrijem ako ne komuniciram sa senzorom
+	// Nije potreban nikakav rezultat. Ako ne komunicira, dobice se timeout
+	send(cmdRunningLightGetStatus);
+
 	cout << "set passive" << endl;
 	send(cmdSetPassiveMode);
 	cout << "set running light ON" << endl;
@@ -257,15 +261,12 @@ bool GasSensor::getLedStatus() {
 	return rezultat;
 }
 
-//////////////////
-// pomocnici
-//////////////////
 
 /**
  * send raw command to sensor and wait for reply of specific length
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
-	#define DEBUG 2
+	#define DEBUG 0
 
 	UartMux *mux = new UartMux();
 	mux->setAddr(this->muxAddress);
@@ -321,8 +322,19 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 					cout << " " << std::hex << static_cast<unsigned int>(reply.at(i)) << std::dec;
 				}
 				cout << CON_RESET << endl;
+				cout << "reply checksum is " << (isChecksumValid(reply) ? "ok" : "NOT OK!") << endl;
 				cout << endl;
 			#endif
+			if (txStruct.checksumPresent == true) {
+				bool valid = isChecksumValid(reply);
+				if ((this->checksumValidation == true) & (valid == false)) {
+					// TODO nesto uraditi!
+					cout << "reply checksum is " << CON_RED << "NOT OK!" << CON_RESET << endl;
+				}
+			} else {
+
+			}
+
 		} else {
 			cout << "ERROR!! Timeout in sensor comunication after " << mS << "mS" << endl;
 		}
@@ -332,19 +344,20 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	return reply;
 }
 
-void GasSensor::sendRawBytes(const char *rawBytes, unsigned int size) {
-	vector<uint8_t> s(rawBytes, rawBytes + size);
-	CmdStruct_t cmd = { s, size };
-	send(cmd);
+void GasSensor::setChecksumValidation(bool on_off) {
+	this->checksumValidation = on_off;
 }
 
-bool GasSensor::isReplyChecksumValid(std::vector<uint8_t> repl) {
+int GasSensor::getDecimals() {
+	return sensorProperties.decimals;
+}
+
+bool GasSensor::isChecksumValid(std::vector<uint8_t> repl) {
 	uint8_t sum = 0;
 	for (unsigned int i = 1; i < (repl.size() - 1); ++i) {
 		// NOTA:
-		// -- Petlja pocinje od JEDINICE a ne od nule. Ne sabira se nulti element (obicno je 0xFF)
-		// -- NE SABIRA SE POSLEDNJI element jer on je checksum
-		// Vidi objasnjenje u datasheet-u
+		// -- Datasheet kaze: checksum se racuna od JEDINICE zakljucno sa PRETPOSLEDNJIM bajtom
+		// -- Ne sabira se nulti i poslednji. Poslednji je checksum.
 		sum += repl.at(i);
 	}
 	sum = ~sum;	// bitwise not
@@ -356,3 +369,18 @@ bool GasSensor::isReplyChecksumValid(std::vector<uint8_t> repl) {
 	};
 
 }
+
+//////////////////
+//////////////////
+// pomocnici
+//////////////////
+//////////////////
+
+
+void GasSensor::sendRawBytes(const char *rawBytes, unsigned int size) {
+	vector<uint8_t> s(rawBytes, rawBytes + size);
+	CmdStruct_t cmd = { s, size };
+	send(cmd);
+}
+
+

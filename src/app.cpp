@@ -61,7 +61,7 @@ int main() {
 		b->trep(1000, 1000);
 		b->trep(1000, 1000);
 
-		int blok = 3;
+		int blok = 1;
 		switch (blok) {
 
 			////////////////////
@@ -91,21 +91,29 @@ int main() {
 
 					b->trep(5, 50);
 					b->trep(5, 50);
-					int ppm = co->getGasConcentrationPpm();
-					int mg = co->getGasConcentrationMgM3();
-					int percOfMax = co->getGasPercentageOfMax();
-					float celsius = co->getTemperature();
-					float rh = co->getRelativeHumidity();
-
 					cout << "---- measure ----" << endl;
-					cout << "gas ppm " << ppm << "\n";
-					cout << "gas mg/m3 " << mg << "\n";
-					cout << "gas percentage of max scale " << percOfMax << "\n";
-					cout << "temperature " << celsius << " C \n";
-					cout << "humidity " << rh << " % \n";
-					cout << "---- done ----\n" << endl;
 
-					usleep(2000 * 1000);
+					int dec = co->getDecimals();
+					cout << "br decimala " << dec << endl;
+
+					int ppm = co->getGasConcentrationPpm();
+					cout << "gas ppm " << ppm << endl;
+
+					int mg = co->getGasConcentrationMgM3();
+					cout << "gas mg/m3 " << mg << endl;
+
+					int percOfMax = co->getGasPercentageOfMax();
+					cout << "gas percentage of max scale " << percOfMax << endl;
+
+					float celsius = co->getTemperature();
+					cout << "temperature " << celsius << " C " << endl;
+
+					float rh = co->getRelativeHumidity();
+					cout << "humidity " << rh << " % " << endl;
+
+					cout << "----  done  ----\n" << endl;
+
+					usleep(5000 * 1000);
 
 					// pretvaramo se da imamo jos neki senzor
 					b->trep(5, 50);
@@ -146,16 +154,15 @@ int main() {
 
 					// LED OFF
 					const std::vector<uint8_t> cmd_running_light_off = { 0xFF, 0x01, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x77 };
-					const CmdStruct_t cmdRunningLightOff = { cmd_running_light_off, 2 };
+					const CmdStruct_t cmdRunningLightOff = { cmd_running_light_off, 2, false };		// slagacu da nije bitan checksum
 
 					// LED ON
 					const std::vector<uint8_t> cmd_running_light_on = { 0xFF,       0x01,    0x89,     0x00,   0x00,    0x00,     0x00,    0x00,    0x76};
-					const CmdStruct_t cmdRunningLightOn = { cmd_running_light_on, 2};
+					const CmdStruct_t cmdRunningLightOn = { cmd_running_light_on, 2, false };		// slagacu da nije bitan checksum
 
 					// LED STATUS
 					const std::vector<uint8_t> cmd_running_light_get_status = { 0xFF,       0x01,    0x8A,     0x00,   0x00,    0x00,     0x00,    0x00,    0x75 };
-					const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9};
-
+					const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9, true };			// slagacu da nije bitan checksum
 
 					co->send(cmdRunningLightGetStatus);
 					usleep(1000 * 1000);

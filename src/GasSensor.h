@@ -6,6 +6,7 @@
 #ifndef SRC_GASSENSOR_H_
 #define SRC_GASSENSOR_H_
 
+#define SENSOR_DATA_ERROR (int)-1
 
 
 #include "UartMux.h"
@@ -18,16 +19,16 @@ public:
 	GasSensor(MuxAdr_t muxAddress, int uartHandle);
 	virtual ~GasSensor();
 
-	uint8_t rxB[50];							// bytes received from UART
-
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
 	void setLedOff();
 	bool getLedStatus();
+	void setChecksumValidation(bool on_off);	// proverava se checksum rezultata ili se ignorise
 
 	int getMaxRange();							// maksimalni raspon merenja senzora
+	int getDecimals();							// broj decimala u rezultatu
 	int getGasConcentrationPpm();				// koncentracija gasa ppm
 	int getGasConcentrationMgM3();				// koncentracija gasa ug/m3
 	int getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
@@ -36,6 +37,8 @@ public:
 
 	// debug only
 	void sendRawBytes(const char *rawBytes, unsigned int size);
+
+	// debug only. kasnije moze da se vrati da bude privatna - TODO
 	std::vector<uint8_t> send(const CmdStruct_t txCmd);		// posalji komande senzoru, cekaj odgovor
 
 
@@ -43,6 +46,8 @@ private:
 	int muxAddress;
 	bool runningLed;
 	int uartHandle;
+	bool checksumValidation = true;
+
 	struct {
 		uint8_t tip;
 		uint16_t maxRange;
@@ -52,7 +57,7 @@ private:
 	} sensorProperties;
 
 	void getSensorProperties_D7();							// popuni struct sa podacima o senzoru
-	bool isReplyChecksumValid(std::vector<uint8_t> repl);
+	bool isChecksumValid(std::vector<uint8_t> repl);
 
 
 };

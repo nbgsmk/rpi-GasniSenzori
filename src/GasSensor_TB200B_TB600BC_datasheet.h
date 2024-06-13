@@ -6,12 +6,12 @@
 #ifndef GASSENSOR_TB200B_TB600BC_H_
 #define GASSENSOR_TB200B_TB600BC_H_
 
-#define SENSOR_DATA_ERROR (int)-1
 
 
 	struct CmdStruct_t{
-		std::vector<uint8_t> cmd;
-		unsigned int expectedReplyLen;
+		std::vector<uint8_t> cmd;		// uint8_t konkretno komanda koja se salje
+		unsigned int expectedReplyLen;	// ocekivana duzina odgovora, od senzora, u bajtovima
+		bool checksumPresent;			// da li ODGOVOR sadrzi cecksum?
 	};
 
 	///////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@
 			// Start bit | Retain | Switch command | Active upload | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47
 	};
-	const CmdStruct_t cmdSetActiveMode = { cmd_set_active_mode, 0};
+	const CmdStruct_t cmdSetActiveMode = { cmd_set_active_mode, 0, false };
 
 
 
@@ -50,7 +50,7 @@
 			// Start bit | Retain | Switch command | Answer | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,       0x78,         0x41,   0x00,    0x00,     0x00,    0x00,    0x46
 	};
-	const CmdStruct_t cmdSetPassiveMode = { cmd_set_passive_mode, 0};
+	const CmdStruct_t cmdSetPassiveMode = { cmd_set_passive_mode, 0, false };
 
 
 
@@ -63,7 +63,7 @@
 	const std::vector<uint8_t> cmd_get_type_range_unit_decimals_0xD1 = {
 			0xD1
 	};
-	const CmdStruct_t cmdGetTypeRangeUnitDecimals0xd1 = { cmd_get_type_range_unit_decimals_0xD1, 9};
+	const CmdStruct_t cmdGetTypeRangeUnitDecimals0xd1 = { cmd_get_type_range_unit_decimals_0xD1, 9, true };
 	// Return value:	(valjda su to vredosti za primer - prim.prev)
 	//	0x18	0	Sensor type
 	//	0x00	1	Maximum range high
@@ -163,7 +163,7 @@
 	const std::vector<uint8_t> cmd_get_type_range_unit_decimals_0xD7 = {
 			0xD7
 	};
-	const CmdStruct_t cmdGetTypeRangeUnitDecimals0xd7 = { cmd_get_type_range_unit_decimals_0xD7, 9};
+	const CmdStruct_t cmdGetTypeRangeUnitDecimals0xd7 = { cmd_get_type_range_unit_decimals_0xD7, 9, true };
 	// Return value (ne pise izricito u pdf-u ali valjda je to return value - prim. prev.)
 	//	0xFF	0	Command header 1
 	//	0xD7	1	Command header 2
@@ -198,7 +198,7 @@
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x86,     0x00,   0x00,    0x00,     0x00,    0x00,    0x79
 	};
-	const CmdStruct_t cmdReadGasConcentration = { cmd_read_gas_concentration, 9};
+	const CmdStruct_t cmdReadGasConcentration = { cmd_read_gas_concentration, 9, true };
 	// RETURN VALUE:
 	//
 	//	0xFF	0	Start bit
@@ -225,7 +225,7 @@
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x87,     0x00,   0x00,    0x00,     0x00,    0x00,    0x78
 	};
-	const CmdStruct_t cmdReadGasConcentrationTempAndHumidity = { cmd_read_gas_concentration_temp_and_humidity, 13};
+	const CmdStruct_t cmdReadGasConcentrationTempAndHumidity = { cmd_read_gas_concentration_temp_and_humidity, 13, true };
 	// RETURN VALUE:
 	//
 	//	0xFF	0	Start bit
@@ -366,7 +366,7 @@
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x88,     0x00,   0x00,    0x00,     0x00,    0x00,    0x77
 	};
-	 const CmdStruct_t cmdRunningLightOff = { cmd_running_light_off, 2};
+	 const CmdStruct_t cmdRunningLightOff = { cmd_running_light_off, 2, false };
 	// RETURN VALUE:
 	//
 	//	0x4F	0
@@ -380,7 +380,7 @@
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,    0x89,     0x00,   0x00,    0x00,     0x00,    0x00,    0x76
 	};
-	const CmdStruct_t cmdRunningLightOn = { cmd_running_light_on, 2};
+	const CmdStruct_t cmdRunningLightOn = { cmd_running_light_on, 2, false };
 	// RETURN VALUE:
 	//
 	//	0x4F	0
@@ -394,7 +394,7 @@
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			     0xFF,       0x01,    0x8A,     0x00,   0x00,    0x00,     0x00,    0x00,    0x75
 	};
-	const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9};
+	const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9, true };
 	// RETURN VALUE:
 	//
 	//	0xFF	0	Start bit
