@@ -28,6 +28,20 @@
 // pomocnici
 #include <chrono>
 
+/*
+ * DEBUGGING
+ * the following are UBUNTU/LINUX, and MacOS ONLY terminal color codes.
+ * https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+ */
+#define CON_RESET   "\033[0m"
+#define CON_BLACK   "\033[30m"      /* Black */
+#define CON_RED     "\033[31m"      /* Red */
+#define CON_GREEN   "\033[32m"      /* Green */
+#define CON_YELLOW  "\033[33m"      /* Yellow */
+#define CON_BLUE    "\033[34m"      /* Blue */
+#define CON_MAGENTA "\033[35m"      /* Magenta */
+#define CON_CYAN    "\033[36m"      /* Cyan */
+#define CON_WHITE   "\033[37m"      /* White */
 
 using namespace std;
 
@@ -45,8 +59,6 @@ GasSensor::~GasSensor() {
 	serialClose(this->uartHandle);
 }
 
-
-
 /**
  * Perform minimal initialization
  */
@@ -55,7 +67,7 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 
 	cout << "set passive" << endl;
 	send(cmdSetPassiveMode);
-	cout << "set running light" << endl;
+	cout << "set running light ON" << endl;
 	send(cmdRunningLightOn);
 	cout << "get props" << endl;
 	getSensorProperties_D7();
@@ -63,7 +75,6 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
 }
-
 
 /**
  * Query parameters from sensor and populate struct
@@ -74,7 +85,7 @@ void GasSensor::getSensorProperties_D7() {
 	//
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
 
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0xD7);	// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
 	uint8_t tip = reply.at(2);
 	if (hdr && tip) {
 		// sensor type ok
@@ -101,15 +112,9 @@ void GasSensor::getSensorProperties_D7() {
 		uint8_t sgn = reply.at(6) & 0b00001111;	// decimals bit 7~4, sign bits 3~0
 
 		dec = dec >> 4;							// spustim ih skroz na desno
-		uint8_t decimals =	((dec & 0b1000)<<3) |
-							((dec & 0b0100)<<2) |
-							((dec & 0b0010)<<1) |
-							 (dec & 0b0001);
+		uint8_t decimals = ((dec & 0b1000) << 3) | ((dec & 0b0100) << 2) | ((dec & 0b0010) << 1) | (dec & 0b0001);
 
-		uint16_t sign =		((sgn & 0b1000)<<3) |
-							((sgn & 0b0100)<<2) |
-							((sgn & 0b0010)<<1) |
-							 (sgn & 0b0001);
+		uint16_t sign = ((sgn & 0b1000) << 3) | ((sgn & 0b0100) << 2) | ((sgn & 0b0010) << 1) | (sgn & 0b0001);
 		sensorProperties.decimals = decimals;		// dobije se 4. Jel' moguce da je tolika tacnost?
 		sensorProperties.sign = sign;				// dobije se 0 = "negative inhibition". Koji li im djavo to znaci??
 
@@ -117,9 +122,7 @@ void GasSensor::getSensorProperties_D7() {
 		throw std::invalid_argument("Wrong sensor type! Expected 0x19, got ??");		// FIXME dodati ovde hex parametar tip, izbaciti printf
 	}
 
-
 }
-
 
 /**
  * Set active mode: sensor will send measurement data automatically in 1 second intervals
@@ -128,7 +131,6 @@ void GasSensor::setActiveMode() {
 	send(cmdSetActiveMode);
 }
 
-
 /**
  * Set passive mode: sensor will send measurement data only when requested
  */
@@ -136,12 +138,11 @@ void GasSensor::setPassiveMode() {
 	send(cmdSetPassiveMode);
 }
 
-
 /**
  * @return maximum measurement range from sensor properties
  */
 int GasSensor::getMaxRange() {
-	return (int)sensorProperties.maxRange;
+	return (int) sensorProperties.maxRange;
 }
 
 /**
@@ -150,7 +151,7 @@ int GasSensor::getMaxRange() {
 int GasSensor::getGasConcentrationPpm() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		uint16_t ppm = (reply.at(6) * 256) + (reply.at(7));
 		uint16_t max = (reply.at(4) * 256) + (reply.at(5));
@@ -158,9 +159,8 @@ int GasSensor::getGasConcentrationPpm() {
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return (int)rezultat;
+	return (int) rezultat;
 }
-
 
 /**
  * @return current gas concentration in ppm
@@ -168,8 +168,7 @@ int GasSensor::getGasConcentrationPpm() {
 int GasSensor::getGasConcentrationMgM3() {
 	uint16_t rezultat = 0;
 	std::vector<uint8_t> reply = send(cmdReadGasConcentration);
-
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		uint16_t mgm3 = (reply.at(2) * 256) + (reply.at(3));
 		uint16_t max = (reply.at(4) * 256) + (reply.at(5));
@@ -177,10 +176,8 @@ int GasSensor::getGasConcentrationMgM3() {
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return (int)rezultat;
+	return (int) rezultat;
 }
-
-
 
 /**
  * @return gas concentration normalized to 0~100% of max measurement range
@@ -188,18 +185,16 @@ int GasSensor::getGasConcentrationMgM3() {
 int GasSensor::getGasPercentageOfMax() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
-
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x86);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		uint16_t ppm = (reply.at(6) * 256) + (reply.at(7));
 		uint16_t max = (reply.at(4) * 256) + (reply.at(5));
-		rezultat = ((float)ppm / (float)max) * 100;
+		rezultat = ((float) ppm / (float) max) * 100;
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return (int)rezultat;
+	return (int) rezultat;
 }
-
 
 /**
  * @return temperature from combined reading (datasheet Command 6)
@@ -207,18 +202,16 @@ int GasSensor::getGasPercentageOfMax() {
 float GasSensor::getTemperature() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
-
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x87);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float temp = ( (reply.at(8) << 8) | (reply.at(9)) ) / 100;
-		float humid = ( (reply.at(10) << 8) | (reply.at(11)) ) / 100;
+		float temp = ((reply.at(8) << 8) | (reply.at(9))) / 100;
+		float humid = ((reply.at(10) << 8) | (reply.at(11))) / 100;
 		rezultat = temp;
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return (int)rezultat;
+	return (int) rezultat;
 }
-
 
 /**
  * @return relative humidity from combined reading (datasheet Command 6)
@@ -226,19 +219,16 @@ float GasSensor::getTemperature() {
 float GasSensor::getRelativeHumidity() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
-
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x87);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float temp = ( (reply.at(8) << 8) | (reply.at(9)) ) / 100;
-		float humid = ( (reply.at(10) << 8) | (reply.at(11)) ) / 100;
+		float temp = ((reply.at(8) << 8) | (reply.at(9))) / 100;
+		float humid = ((reply.at(10) << 8) | (reply.at(11))) / 100;
 		rezultat = humid;
 	} else {
 		rezultat = SENSOR_DATA_ERROR;
 	}
-	return (int)rezultat;
+	return (int) rezultat;
 }
-
-
 
 /**
  * Sensor activity led will blink during operation
@@ -247,7 +237,6 @@ void GasSensor::setLedOn() {
 	send(cmdRunningLightOn);
 }
 
-
 /**
  * Sensor activity led will be off
  */
@@ -255,149 +244,103 @@ void GasSensor::setLedOff() {
 	send(cmdRunningLightOff);
 }
 
-
 /**
  * Sensor activity led will be off
  */
 bool GasSensor::getLedStatus() {
 	bool rezultat = false;
 	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
-	bool hdr = (reply.at(0)==0xFF)  && (reply.at(1)==0x8A);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x8A);		// reply header ok?
 	if (hdr) {
 		rezultat = (reply.at(2) == 1) ? true : false;
 	}
 	return rezultat;
 }
 
-
-
 //////////////////
 // pomocnici
 //////////////////
 
-
-
 /**
- * send raw command to sensor and wait for reply
+ * send raw command to sensor and wait for reply of specific length
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
+	#define DEBUG 2
 
 	UartMux *mux = new UartMux();
 	mux->setAddr(this->muxAddress);
 
-    // send command to sensor and immediately wait to receive tx.expectedReplyLen bytes
-    std::vector<uint8_t> reply;
-    reply.clear();
-    serialFlush(this->uartHandle);
+	std::vector<uint8_t> reply;
+	reply.clear();
+	serialFlush(this->uartHandle);
 
-    vector<long unsigned int>  vreme_uS;
-    vreme_uS.reserve(15);	// vece nego sto treba
-    vreme_uS.clear();
-    auto sadTime = std::chrono::high_resolution_clock::now();
-    unsigned int prethodAvail = 0, sadAvail = 0;
-    unsigned int timeOut_mS = 0;
-    unsigned int xCnt = 0;
-
-	 cout << "send sajz " << txStruct.cmd.size() << ", expect " << txStruct.expectedReplyLen << endl;
-    for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
-//    	cout << "send loop " << i << ", " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << endl;
-    	serialPutchar(this->uartHandle, txStruct.cmd[i]);
-    	// At 9600 baud, the 1 bit time is ~104 microseconds, amd 1 full character is 1.04mS
-    	usleep(500);	// plenty of time between characters
+	#if DEBUG>=1
+		cout << "send sajz " << txStruct.cmd.size() << ", will expect " << txStruct.expectedReplyLen << endl;
+		#if DEBUG>=2
+			cout << "cmd to send:";
+			for (unsigned int i = 0; i < txStruct.cmd.size(); ++i) {
+					cout << " " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << std::dec;
+			}
+			cout << std::dec << endl;
+		#endif
+	#endif
+	for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
+		serialPutchar(this->uartHandle, txStruct.cmd[i]);
+		// At 9600 baud, the 1 bit time is ~104 microseconds, amd 1 full character is 1.04mS
+		usleep(1000);	// some guard time between characters. No reason, just because.
 	};
 
 
+	// Ako ocekujem bilo kakav odgovor od senzora
+	if (txStruct.expectedReplyLen > 0) {
+		unsigned int mS = 0;
+		unsigned int timeOut_mS = 2000;		// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako za DVE SEKUNDE ne stigne nista, onda jbga!
 
-	// ++++++++++++++++++++++++++++++++++++++++++++ //
-	// ++++++++++++++++++++++++++++++++++++++++++++ //
-	// ++++++++++++++++++++++++++++++++++++++++++++ //
-
-    if (1==2) {
-    	//////////////////////////////////////////
-    	//////////////////////////////////////////
-        //    unsigned int mS = 300;
-        //    usleep(mS * 1000);
-        sadTime = std::chrono::high_resolution_clock::now();
-    	if (txStruct.expectedReplyLen > 0) {
-    		cout << "cekam " << txStruct.expectedReplyLen << endl;
-    		cout << "sad " << sadAvail << " prethodnoAvail " << prethodAvail << endl;
-    		do {
-    			sadAvail = serialDataAvail(this->uartHandle);
-    			if (sadAvail > prethodAvail) {
-    				cout << "prethodnoAvail " << prethodAvail << ", a sada Avail  " << sadAvail << endl;
-    				auto elapsed_ticks = std::chrono::high_resolution_clock::now() - sadTime;
-    				long unsigned int duration_uS = std::chrono::duration_cast<std::chrono::microseconds>(elapsed_ticks).count();
-    				vreme_uS.push_back(duration_uS);
-    				prethodAvail = sadAvail;
-    				while (serialDataAvail(this->uartHandle)) {
-    					int x = serialGetchar(this->uartHandle);
-    					reply.push_back(x);
-    					xCnt++;
-    					 cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
-    				};
-    			} else {
-    				cout << "spavam vec " << timeOut_mS << endl;
-    				usleep(1000);
-    				timeOut_mS++;
-    			}
-
-    			cout << "primljeno xCnt " << xCnt << " timeout je " << timeOut_mS << endl;
-    			cout << "uslov 1 je " << (xCnt <= txStruct.expectedReplyLen) << endl;
-    			cout << "uslov 2 je " << (timeOut_mS < 20) << endl;
-    		} while ( (xCnt <= txStruct.expectedReplyLen) | (timeOut_mS < 20) );
-    		//	reply.shrink_to_fit();
-    		for (long unsigned int i = 0; i < reply.size(); ++i) {
-    			cout << "reply [" << i << "] " << reply.at(i) << ", at " << vreme_uS.at(i);
-    		}
-    	}
-
-
-   	//////////////////////////////////////////
-   	//////////////////////////////////////////
-
-	} else {
-
-		if (txStruct.expectedReplyLen > 0) {
-	//		cout << "cekam " << txStruct.expectedReplyLen << endl;
-			unsigned int mS = 300;
-	//		cout << "usleep " << mS << "mS" << endl;
-			usleep(mS * 1000);
-			int avail = serialDataAvail(this->uartHandle);
-			//		cout << "serial avail " << avail << endl;
-			while (serialDataAvail(this->uartHandle)) {
-				int x = serialGetchar(this->uartHandle);
-	//			cout << "rcv " << std::hex << static_cast<unsigned int>(x) << endl;
-				reply.push_back(x);
-			};
+		// dok ne stignu SVI ocekivani karakteri
+		while (serialDataAvail(this->uartHandle) < (int) txStruct.expectedReplyLen) {
+			usleep(1000);
+			mS++;
+			if (mS >= timeOut_mS) {
+				// Ne volim sa pola metoda da uradim return. Mozda je potreban neki cleanup
+				break;
+			}
 		}
 
-		//////////////////////////////////////////
-		//////////////////////////////////////////
-
+		if (mS < timeOut_mS) {
+			// ako su stigli bajtovi i nije nastupio timeout
+			while ( serialDataAvail(this->uartHandle) > 0 ) {
+				uint8_t x = serialGetchar(this->uartHandle);
+				reply.push_back(x);
+			};
+			#if DEBUG>=2
+				cout << "after sleeping " << mS << "mS" << endl;
+				cout << "rcv: ";
+				if (reply.size() == 0) { cout << CON_RED << "NONE!"; };
+				if (reply.size() != txStruct.expectedReplyLen) { cout << CON_YELLOW; };
+				for (unsigned int i = 0; i < reply.size(); ++i) {
+					cout << " " << std::hex << static_cast<unsigned int>(reply.at(i)) << std::dec;
+				}
+				cout << CON_RESET << endl;
+				cout << endl;
+			#endif
+		} else {
+			cout << "ERROR!! Timeout in sensor comunication after " << mS << "mS" << endl;
+		}
 	}
-
-
-	// ++++++++++++++++++++++++++++++++++++++++++++ //
-	// ++++++++++++++++++++++++++++++++++++++++++++ //
-	// ++++++++++++++++++++++++++++++++++++++++++++ //
-
 
 	serialFlush(this->uartHandle);
 	return reply;
 }
 
-
-
-void GasSensor::sendRawCommand(const char *rawBytes, unsigned int size){
+void GasSensor::sendRawBytes(const char *rawBytes, unsigned int size) {
 	vector<uint8_t> s(rawBytes, rawBytes + size);
 	CmdStruct_t cmd = { s, size };
 	send(cmd);
 }
 
-
 bool GasSensor::isReplyChecksumValid(std::vector<uint8_t> repl) {
 	uint8_t sum = 0;
-	for (unsigned int i = 1; i < (repl.size()-1); ++i) {
+	for (unsigned int i = 1; i < (repl.size() - 1); ++i) {
 		// NOTA:
 		// -- Petlja pocinje od JEDINICE a ne od nule. Ne sabira se nulti element (obicno je 0xFF)
 		// -- NE SABIRA SE POSLEDNJI element jer on je checksum
@@ -406,7 +349,7 @@ bool GasSensor::isReplyChecksumValid(std::vector<uint8_t> repl) {
 	}
 	sum = ~sum;	// bitwise not
 	sum = sum + 1;
-	if( sum == repl.at(repl.size()-1) ){
+	if (sum == repl.at(repl.size() - 1)) {
 		return true;
 	} else {
 		return false;

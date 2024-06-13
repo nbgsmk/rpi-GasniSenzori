@@ -61,7 +61,7 @@ int main() {
 		b->trep(1000, 1000);
 		b->trep(1000, 1000);
 
-		int blok = 1;
+		int blok = 3;
 		switch (blok) {
 
 			////////////////////
@@ -74,12 +74,12 @@ int main() {
 				cout << "mux " << adr_CO << endl;
 				cout << "CO init " << endl;
 				co->init(2000);
-				cout << "ok" << endl;
+				cout << "init ok" << endl;
 
 				for (;;) {
 					cout << "----- talk to CO -----" << endl;
 					cout << "toggle running led a few times, just to know we are here" << endl;
-					for (int i = 0; i < 4; ++i) {
+					for (int i = 0; i < 0; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {
 							co->setLedOff();
@@ -105,7 +105,6 @@ int main() {
 					cout << "humidity " << rh << " % \n";
 					cout << "---- done ----\n" << endl;
 
-
 					usleep(2000 * 1000);
 
 					// pretvaramo se da imamo jos neki senzor
@@ -114,7 +113,7 @@ int main() {
 					b->trep(5, 50);
 					cout << "---- talk to H2S ----" << endl;
 					cout << "---- fejk, ne radim nista, samo malo cekam ----" << endl;
-					h2s->sendRawCommand("proba", sizeof("proba"));
+					h2s->sendRawBytes("proba", sizeof("proba"));
 					usleep(3000 * 1000);
 					cout << "---- done ----\n" << endl;
 
@@ -122,34 +121,54 @@ int main() {
 				break;
 			}
 
-
-
-
 			/////////////////////
 			// TALK TO DEBUG UART
 			/////////////////////
 			case 2: {
-				for ( ; ; ) {
+				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
-					const char s[] = {'l', 'e', 'v', 'o', ' ', 'd', 'e', 's', 'n', 'o', '\n'};
+					const char s[] = { 'l', 'e', 'v', 'o', ' ', 'd', 'e', 's', 'n', 'o', '\n' };
 //					char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
-					co->sendRawCommand(s, sizeof(s));
+					co->sendRawBytes(s, sizeof(s));
 					usleep(1000 * 1000);
 				}
 				break;
 			}
 
+			///////////////////////
+			// SENSOR RESPONSE TIME
+			///////////////////////
+			case 3: {
+				for (;;) {
+					b->trepCnt(blok, 5, 100);
+
+					// LED OFF
+					const std::vector<uint8_t> cmd_running_light_off = { 0xFF, 0x01, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x77 };
+					const CmdStruct_t cmdRunningLightOff = { cmd_running_light_off, 2 };
+
+					// LED ON
+					const std::vector<uint8_t> cmd_running_light_on = { 0xFF,       0x01,    0x89,     0x00,   0x00,    0x00,     0x00,    0x00,    0x76};
+					const CmdStruct_t cmdRunningLightOn = { cmd_running_light_on, 2};
+
+					// LED STATUS
+					const std::vector<uint8_t> cmd_running_light_get_status = { 0xFF,       0x01,    0x8A,     0x00,   0x00,    0x00,     0x00,    0x00,    0x75 };
+					const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9};
 
 
+					co->send(cmdRunningLightGetStatus);
+					usleep(1000 * 1000);
+				}
+				break;
+			}
 
 			///////////////
 			// TEST UARTMUX
-			///////////////
-			case 3: {
+				///////////////
+			case 4: {
 				UartMux *mux = new UartMux();
-				for ( ; ; ) {
+				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
 					mux->setAddr(2);		// raw num
@@ -167,18 +186,14 @@ int main() {
 				break;
 			}
 
-			default: {
-				break;
-			}
 
 		}
 
-
-		for (; ; ) {
+		for (;;) {
 			b->trep(5, 50);
 		}
 
-
 	}
+
 	return 0;
 }

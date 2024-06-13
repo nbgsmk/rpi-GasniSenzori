@@ -35,7 +35,8 @@ public:
 	float getRelativeHumidity();				// sve zajedno merimo
 
 	// debug only
-	void sendRawCommand(const char *rawBytes, unsigned int size);
+	void sendRawBytes(const char *rawBytes, unsigned int size);
+	std::vector<uint8_t> send(const CmdStruct_t txCmd);		// posalji komande senzoru, cekaj odgovor
 
 
 private:
@@ -51,7 +52,6 @@ private:
 	} sensorProperties;
 
 	void getSensorProperties_D7();							// popuni struct sa podacima o senzoru
-	std::vector<uint8_t> send(const CmdStruct_t txCmd);		// posalji komande senzoru, cekaj odgovor
 	bool isReplyChecksumValid(std::vector<uint8_t> repl);
 
 
