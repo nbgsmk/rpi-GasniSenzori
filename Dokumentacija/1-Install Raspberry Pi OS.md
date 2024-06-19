@@ -39,10 +39,10 @@ Install rpi-imager
 5 - Use OS customisation -> Would you like to apply OS customization settings?
 
   **OBAVEZNO** izabrati "edit settings"! Passwordi za korisnika i wifi su, naizgled, zapamceni (vide se 'tackice') ali pokazalo se da nisu tacni.
-  Proveriti i ukucati ponovo!!
-  Ovo treba uraditi **svaki put** kad se udje u "OS customizations" prozorcic i, uopste, za svako sledece pokretanje imagera.
-  Verovatno je u pitanju neka sigurnosna mera - ne cuvati unsecure kredencijale, ne znam. U svakom slucaju, kod mene tako radi.
-  Posto ce se realno vrlo retko reinstalirati linux na sd karticu, ovo nije neka smetnja.
+Proveriti i ukucati __ponovo__!!
+Ovo treba uraditi **svaki put** kad se udje u "OS customizations" prozorcic i, uopste, za svako sledece pokretanje imagera.
+Verovatno je u pitanju neka sigurnosna mera - ne cuvati unsecure kredencijale, ne znam. U svakom slucaju, kod mene tako radi.
+Posto ce se realno vrlo retko reinstalirati linux na sd karticu, ovo nije neka smetnja.
 
   Dalje:
 
@@ -75,15 +75,12 @@ Ovaj put izabrati **YES**
 
 Potvrditi upozorenje da ce svi podaci na SD kartici biti obrisani. Pazljivo :-)
 
-[^1]: Verzija "Lite (32-bit)" = Raspbian 12. NECE da startuje bez povezanog hdmi kabla!  Pitaju ljudi po forumima "can't start headless". Mozda da se resi za neku buducu verziju. Za sada nisam hteo dalje da trazim.
-
+[^1]: Verzija "Lite (32-bit)" = Raspbian 12. NECE da startuje bez povezanog hdmi kabla!  Pitaju ljudi po forumima "can't start headless". Mozda da se resi za neku buducu verziju. Za sada nisam hteo dalje da trazim.  
 Cak i ako se poveze hdmi, izgleda da 12-ica koristi "NetworkManager" sistem koji se ne slaze sa wpa_supplicant-om. Verovatno zato ne startuje wifi, tj wpa_supplicant naizgled radi ali, nakon sto skenira wifi mreze, **ne moze da snimi konfiguraciju.** Nisam hteo dalje da se zamajavam sa time.
 
-[^2]: Verzija "(Legacy 32-bit) Lite" = Raspbian 11. Mogli su to lepse da napisu. :-) Nakon prve instalacije, rpi uradi jedan dodatni reboot. Nesto priprema sd karticu, ovo ono... 40 sekundi do prve poruke na terminalu ali 3-4 minuta dok ne poveze wifi! Sledeci restarti idu daleko brze.
-
-Startuje bez hdmi, nema greske!
-
-Startuje sa hdmi, nema greske!
+[^2]: Verzija "(Legacy 32-bit) Lite" = Raspbian 11. Mogli su to lepse da napisu. :-) Nakon prve instalacije, rpi uradi jedan dodatni reboot. Nesto priprema sd karticu, ovo ono... 40 sekundi do prve poruke na terminalu ali 3-4 minuta dok ne poveze wifi! Sledeci restarti idu daleko brze.  
+Startuje bez hdmi, nema greske!  
+Startuje sa hdmi, nema greske!  
 
 
 2 Serijska konzola na rpi
