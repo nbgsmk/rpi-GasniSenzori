@@ -164,14 +164,14 @@ Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je 
 
 
 (**1**) Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
-Oops: Unable to determine Raspberry Pi board revision from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
-      WiringPi    : 3.6
-      system name : Linux
-      release     : 6.5.0-35-generic
-      version     : #35-Ubuntu SMP PREEMPT_DYNAMIC Fri Apr 26 11:23:57 UTC 2024
-      machine     : x86_64
- -> This is not an ARM architecture; it cannot be a Raspberry Pi.
-...
+		Oops: Unable to determine Raspberry Pi board revision from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
+		      WiringPi    : 3.6
+		      system name : Linux
+		      release     : 6.5.0-35-generic
+		      version     : #35-Ubuntu SMP PREEMPT_DYNAMIC Fri Apr 26 11:23:57 UTC 2024
+		      machine     : x86_64
+		 -> This is not an ARM architecture; it cannot be a Raspberry Pi.
+		...
 
 
 3 Use SSH Keys to Connect Without a Password
