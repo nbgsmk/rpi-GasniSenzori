@@ -22,7 +22,7 @@ Install rpi-imager
   
   1 - Choose device -> Raspberry Pi Zero (ne birati "Zero 2W")
   
-  2 - Operating system [^1] [^2] -> 
+  2 - Operating system[^1][^2] -> 
   
         Raspberry Pi OS (other) -> 
         
