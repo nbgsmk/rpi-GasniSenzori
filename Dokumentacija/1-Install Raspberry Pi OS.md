@@ -56,19 +56,15 @@ Install rpi-imager
   
   Klikni na "show password" i videces zasto
 
-
-
-  
+ 
   Tab - SERVICES
 
   Ako nista drugo, makar za debugging, ukljuciti **SSH** -> password authentication
   
 
-
-
   Tab - OPTIONS
 
-  Kako god hocete
+  Kako god hoces
 
   -> SAVE
 
@@ -90,9 +86,10 @@ Startuje bez hdmi, nema greske!
 Startuje sa hdmi, nema greske!
 
 
-[^3]: Serijska konzola na samom rpi
+2 Serijska konzola na rpi
+-------------------------
 
-Ako ce biti potreban debugging, moze se na gpio header povezati sistemska serijska konzola:
+Ako unapred znas da ce biti potreban debugging, moze se na gpio header povezati sistemska serijska konzola:
 
 - Ako je kartica i dalje u racunaru na kojem je obavljen rpi-imager
 
