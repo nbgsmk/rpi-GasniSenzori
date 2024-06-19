@@ -2,7 +2,7 @@
 1 Raspberry Pi Zero W install
 =============================
 
-1.1) Priprema SD kartice za rpi
+1.1 Priprema SD kartice za rpi
 -------------------------------
    
 Install rpi-imager
@@ -79,19 +79,18 @@ Ovaj put izabrati **YES**
 
 Potvrditi upozorenje da ce svi podaci na SD kartici biti obrisani. Pazljivo :-)
 
-Nota [^1]
-Verzija "Lite (32-bit)" = Raspbian 12. NECE da startuje bez povezanog hdmi kabla!  Pitaju ljudi po forumima "can't start headless". Mozda da se resi za neku buducu verziju. Za sada nisam hteo dalje da trazim.
+[^1]: Verzija "Lite (32-bit)" = Raspbian 12. NECE da startuje bez povezanog hdmi kabla!  Pitaju ljudi po forumima "can't start headless". Mozda da se resi za neku buducu verziju. Za sada nisam hteo dalje da trazim.
 
 Cak i ako se poveze hdmi, izgleda da 12-ica koristi "NetworkManager" sistem koji se ne slaze sa wpa_supplicant-om. Verovatno zato ne startuje wifi, tj wpa_supplicant naizgled radi ali, nakon sto skenira wifi mreze, **ne moze da snimi konfiguraciju.** Nisam hteo dalje da se zamajavam sa time.
 
-Nota [^2] Verzija "(Legacy 32-bit) Lite" = Raspbian 11. Mogli su to lepse da napisu. :-) Nakon prve instalacije, rpi uradi jedan dodatni reboot. Nesto priprema sd karticu, ovo ono... 40 sekundi do prve poruke na terminalu ali 3-4 minuta dok ne poveze wifi! Sledeci restarti idu daleko brze.
+[^2]: Verzija "(Legacy 32-bit) Lite" = Raspbian 11. Mogli su to lepse da napisu. :-) Nakon prve instalacije, rpi uradi jedan dodatni reboot. Nesto priprema sd karticu, ovo ono... 40 sekundi do prve poruke na terminalu ali 3-4 minuta dok ne poveze wifi! Sledeci restarti idu daleko brze.
 
 Startuje bez hdmi, nema greske!
 
 Startuje sa hdmi, nema greske!
 
 
-Nota [^3] Serijska konzola na samom rpi
+[^3]: Serijska konzola na samom rpi
 
 Ako ce biti potreban debugging, moze se na gpio header povezati sistemska serijska konzola:
 
