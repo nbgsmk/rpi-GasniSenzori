@@ -128,23 +128,27 @@ b) Ili putem nazovi-grafickog interfejsa
 
 		$ sudo raspi-config
 
-Pojavi se nekakav terminalski gui
+		Pojavi se nekakav terminalski gui
 
-		Pa zatim ->  3 - Interface options
+		zatim birati opcije
+		 ->  3 - Interface options
 			-> I6 - Serial port
 			-> Would you like a login shell to be accessible over serial? -> **NO**
 			-> Would you like the serial port hardware to be enabled? -> **YES**
 	
 		Potvrdi, izadji. Ako trazi reboot -> OK
 
-Prati sa "ping zero.local", naravno.
+Prati sa "ping zero.local", naravno.  
 Kad ponovo postane dostupan, loguj se
 
 
 
 
 
-2.2. Kad se ponovo logujes - proveri UART / WiringPi
+2.2 Provera UART / WiringPi
+------------------------------
+
+Kad se ponovo logujes:
 
 		zero@local$ gpio readall
 		+-----+-----+---------+------+---+-Pi ZeroW-+---+------+---------+-----+-----+
@@ -159,7 +163,7 @@ Kad ponovo postane dostupan, loguj se
 Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je na gpio header povezan nas nasusni UART. Pfijuu konacno mogu da odahnem!
 
 
-[^1] Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
+(**1**) Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
 Oops: Unable to determine Raspberry Pi board revision from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
       WiringPi    : 3.6
       system name : Linux
@@ -170,7 +174,7 @@ Oops: Unable to determine Raspberry Pi board revision from /proc/device-tree/sys
 ...
 
 
-2.3 Use SSH Keys to Connect Without a Password
+3 Use SSH Keys to Connect Without a Password
 ----------------------------------------------
 
 SSH keys ce biti potrebni za remote debugging, kao i da bi se lakse logovao ubuduce. Generisem kljuc na host masini. U mojem slucaju je LINUX. Ako koristis windows za linux development, onda si car, snaci ces se :-) 
