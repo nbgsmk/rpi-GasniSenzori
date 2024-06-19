@@ -163,8 +163,13 @@ Kad se ponovo logujes:
 Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je na gpio header povezan nas nasusni UART. Pfijuu konacno mogu da odahnem!
 
 
-(**1**) Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
-		Oops: Unable to determine Raspberry Pi board revision from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
+2.3 WiringPi na development masini
+----------------------------------
+
+Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
+
+		Oops: Unable to determine Raspberry Pi board revision 
+		from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
 		      WiringPi    : 3.6
 		      system name : Linux
 		      release     : 6.5.0-35-generic
@@ -172,6 +177,9 @@ Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je 
 		      machine     : x86_64
 		 -> This is not an ARM architecture; it cannot be a Raspberry Pi.
 		...
+
+Instaliraj ga, iste su komande kao za raspberry. Trebace ti!!  
+Toliko.  
 
 
 3 Use SSH Keys to Connect Without a Password
