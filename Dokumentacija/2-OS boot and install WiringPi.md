@@ -168,6 +168,7 @@ Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je 
 
 Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
 
+		$ gpio -v
 		Oops: Unable to determine Raspberry Pi board revision 
 		from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
 		      WiringPi    : 3.6

@@ -17,14 +17,14 @@
 
 
 UartMux::UartMux() {
-	this->currentAddress = adr_DONOTUSE_8;
+	this->currentAddress = adr_DONOTUSE_1;
 	pinMode(UartMuX_pinS1, OUTPUT);
 	pinMode(UartMuX_pinS2, OUTPUT);
 	pinMode(UartMuX_pinS3, OUTPUT);
 }
 
 UartMux::~UartMux() {
-	this->currentAddress = adr_DONOTUSE_8;
+	this->currentAddress = adr_DONOTUSE_1;
 }
 
 
@@ -47,6 +47,6 @@ void UartMux::setAddr(MuxAdr_t muxAdresa){
 
 
 MuxAdr_t UartMux::getAddr() {
-	return currentAddress;
+	return currentAddress+1;	// dodajem 1 da bi se printout na ekranu poklapao sa nazivom na plocici muxa
 }
 

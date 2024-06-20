@@ -31,7 +31,7 @@
 #define adr_H2S			4
 #define adr_O2			5
 #define adr_itd			7
-#define adr_DONOTUSE_8	8	// pocetno, izgleda da su svi pinovi floating high, tj adresa 0x111 iliti, po njegovoj numeraciji port 8
+#define adr_DONOTUSE_1	1	// pocetno, izgleda da su svi pinovi floating low, tj adresa 0x000 iliti, po njegovoj numeraciji port 1
 
 
 // rpi specific
@@ -69,9 +69,10 @@
  * wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
  * wiringPiSetup();		// Initializes wiringPi using wiringPi's simlified number system.
  */
-#define UartMuX_pinS1	 4	// gpio4
-#define UartMuX_pinS2	 3	// gpio3
-#define UartMuX_pinS3	 2	// gpio2
+// map uartmux pin S1,2,3->	BCM pin
+#define UartMuX_pinS1		16	// koristi BCM column (Broadcomm SoC numbering)
+#define UartMuX_pinS2		20	// koristi BCM column (Broadcomm SoC numbering)
+#define UartMuX_pinS3		21	// koristi BCM column (Broadcomm SoC numbering)
 
 typedef unsigned int MuxAdr_t;
 

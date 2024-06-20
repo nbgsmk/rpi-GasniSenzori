@@ -78,15 +78,17 @@ int main() {
 
 				for (;;) {
 					cout << "----- talk to CO -----" << endl;
-					cout << "toggle running led a few times, just to know we are here" << endl;
-					for (int i = 0; i < 0; ++i) {
+					cout << "toggle sensor running led a few times, just to know we are here" << endl;
+					for (int i = 0; i < 3; ++i) {
 						b->trep(5, 50);
 						if (co->getLedStatus()) {
+							cout << "led should be off" << endl;
 							co->setLedOff();
 						} else {
+							cout << "led should be on" << endl;
 							co->setLedOn();
 						}
-						usleep(2000 * 1000);
+						usleep(1000 * 2500);
 					}
 
 					b->trep(5, 50);
@@ -172,23 +174,31 @@ int main() {
 
 			///////////////
 			// TEST UARTMUX
-				///////////////
+			///////////////
 			case 4: {
 				UartMux *mux = new UartMux();
 				for (;;) {
+					cout << "uartmux test" << endl;
+					cout << "------------" << endl;
 					b->trepCnt(blok, 5, 250);
 
 					mux->setAddr(2);		// raw num
-					usleep(1000 * 1000);
+					cout << "mux addr " << mux->getAddr() << endl;
+					usleep(1000 * 2000);
 
 					mux->setAddr(adr_CO);	// logical address
-					usleep(1000 * 1000);
+					cout << "mux addr " << mux->getAddr() << endl;
+					usleep(1000 * 2000);
 
 					mux->setAddr(adr_O2);
-					usleep(1000 * 1000);
+					cout << "mux addr " << mux->getAddr() << endl;
+					usleep(1000 * 2000);
 
 					mux->setAddr(adr_itd);
-					usleep(1000 * 1000);
+					cout << "mux addr " << mux->getAddr() << endl;
+					usleep(1000 * 2000);
+
+					cout << endl;
 				}
 				break;
 			}
