@@ -63,14 +63,14 @@ int main() {
 		b->trep(1000, 1000);
 
 		/**
-		 * blok 1 = talk to sensors
+		 * blok 1 = talk to sensors normal
 		 * blok 2 = nekakav debug uart test
 		 * blok 3 = sensor response time (ispada da je oko 30-4mS)
 		 * blok 4 = UartMux test
 		 * blok 5 = svaki senzor bi morao da zna svoju adresu
 		 */
 
-		int blok = 5;
+		int blok = 1;
 		cout << "test blok " << blok << endl;
 
 		switch (blok) {
