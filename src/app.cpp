@@ -62,7 +62,17 @@ int main() {
 		b->trep(1000, 1000);
 		b->trep(1000, 1000);
 
-		int blok = 1;
+		/**
+		 * blok 1 = talk to sensors
+		 * blok 2 = nekakav debug uart test
+		 * blok 3 = sensor response time (ispada da je oko 30-4mS)
+		 * blok 4 = UartMux test
+		 * blok 5 = svaki senzor bi morao da zna svoju adresu
+		 */
+
+		int blok = 5;
+		cout << "test blok " << blok << endl;
+
 		switch (blok) {
 
 			////////////////////
@@ -70,8 +80,6 @@ int main() {
 			////////////////////
 			case 1: {
 				b->trepCnt(blok, 5, 250);
-
-
 				for (;;) {
 					///////////////////////////
 					///////////////////////////
@@ -328,6 +336,43 @@ int main() {
 				break;
 			}
 
+
+
+			////////////////////////////
+			// Svaki senzor zna sa sebe
+			///////////////////////////
+			case 5: {
+				GasSensor *sa = new GasSensor(4, uartFileDescriptor);
+				GasSensor *sb = new GasSensor(5, uartFileDescriptor);
+				GasSensor *sc = new GasSensor(6, uartFileDescriptor);
+				sa->init(2000);
+				sb->init(2000);
+				sc->init(2000);
+
+				cout << "-------------- self-aware -------------" << endl;
+				cout << "--- ko je na ovoj adresi i sta meri ---" << endl;
+				cout << "---------------------------------------" << endl;
+				cout << "Ja sam " << sa->getSensorTypeStr() << ", na adresi " << sa->getMuxAddress() << ", merim " << sa->getGasConcentrationPpm() << " ppm, temperatura je " << sa->getTemperature() << endl;
+				cout << "Ja sam " << sb->getSensorTypeStr() << ", na adresi " << sb->getMuxAddress() << ", merim " << sb->getGasConcentrationPpm() << " ppm, temperatura je " << sb->getTemperature() << endl;
+				cout << "Ja sam " << sc->getSensorTypeStr() << ", na adresi " << sc->getMuxAddress() << ", merim " << sc->getGasConcentrationPpm() << " ppm, temperatura je " << sc->getTemperature() << endl;
+				cout << endl;
+				cout << "-------- ukratko --------" << endl;
+				cout << "senzor " << sb->getSensorTypeStr() << ", ppm=" << sb->getGasConcentrationPpm() << endl;
+				cout << "senzor " << sc->getSensorTypeStr() << ", ppm=" << sc->getGasConcentrationPpm() << endl;
+				cout << endl;
+				cout << "------- par nasumicnih komandi za kraj -------" << endl;
+				cout << "senzor " << sa->getSensorTypeStr() << ", senzor " << sc->getSensorTypeStr() << endl;
+				cout << "senzor " << sb->getSensorTypeStr() << " prisutan" << endl;
+
+				cout << "senzor na nepostojecoj adresi 2 ?" << endl;
+				GasSensor *gx = new GasSensor(2, uartFileDescriptor);
+				gx->init(1000);
+				cout << "nepostojeci meri " << gx->getGasConcentrationPpm() << endl;
+				cout << "------------------- toliko -------------------" << endl;
+				return 0;
+
+				break;
+			}
 
 		}
 
