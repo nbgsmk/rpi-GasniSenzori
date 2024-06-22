@@ -25,6 +25,7 @@ public:
 	void setLedOn();
 	void setLedOff();
 	bool getLedStatus();
+	int getMuxAddress();						// adresa na uart multiplekseru
 	void setChecksumValidation(bool on_off);	// proverava se checksum rezultata ili se ignorise
 
 	int getSensorTypeHex();						// HEX vrednost - tip senzora
@@ -48,6 +49,7 @@ private:
 	int muxAddress;
 	bool runningLed;
 	int uartHandle;
+	bool initCompleted = false;
 	bool checksumValidation = true;
 
 	struct {

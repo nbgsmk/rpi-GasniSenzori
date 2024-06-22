@@ -49,9 +49,11 @@ using namespace std;
  * Constructor to create sensor and perform minimal initialization
  */
 GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle) {
+	this->initCompleted = false;
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
 	this->uartHandle = uartHandle;
+
 
 }
 
@@ -65,6 +67,7 @@ GasSensor::~GasSensor() {
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	#define DEBUG 0
 	usleep(waitSensorStartup_mS * 1000);
+	this->initCompleted = true;
 
 	// Najbezbolniji nacin da sto ranije otkrijem ako ne komuniciram sa senzorom
 	// Nije potreban nikakav rezultat. Ako ne komunicira, dobice se timeout
@@ -87,6 +90,7 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
+
 }
 
 /**
@@ -99,10 +103,8 @@ void GasSensor::getSensorProperties_D7() {
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
-	uint8_t tip = reply.at(2);
-	if (hdr && tip) {
-		// sensor type ok
-		sensorProperties.tip = tip;
+	if (hdr) {
+		sensorProperties.tip = reply.at(2);
 		sensorProperties.maxRange = (reply.at(3) << 8) | reply.at(4);
 		switch (reply.at(5)) {
 			case 0x02:
@@ -132,7 +134,7 @@ void GasSensor::getSensorProperties_D7() {
 		sensorProperties.sign = sign;				// dobije se 0 = "negative inhibition". Koji li im djavo to znaci??
 
 	} else {
-		throw std::invalid_argument("Wrong sensor type! Expected 0x19, got ??");		// FIXME dodati ovde hex parametar tip, izbaciti printf
+		throw std::invalid_argument("Wrong response header during init! Exiting.");
 	}
 
 }
@@ -151,6 +153,13 @@ void GasSensor::setPassiveMode() {
 	send(cmdSetPassiveMode);
 }
 
+
+/**
+ * Vraca adresu na uart multiplekseru gde je senzor povezan
+ */
+int GasSensor::getMuxAddress(){
+	return this->muxAddress;
+}
 
 /**
  * Tip senzora HEX vrednost. Vidi datasheet
@@ -308,6 +317,10 @@ bool GasSensor::getLedStatus() {
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	#define DEBUG 0
+
+	if (initCompleted == false) {
+		throw std::invalid_argument("Must call init before sending commands! Exiting!");
+	}
 
 	UartMux *mux = new UartMux();
 	mux->setAddr(this->muxAddress);
