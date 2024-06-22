@@ -57,6 +57,7 @@ int main() {
 		Blinkovi *b = new Blinkovi();
 		GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
 		GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
+		GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
 
 		b->trep(1000, 1000);
 		b->trep(1000, 1000);
@@ -70,14 +71,18 @@ int main() {
 			case 1: {
 				b->trepCnt(blok, 5, 250);
 
-				// CO senzor
-				cout << "mux " << adr_CO << endl;
-				cout << "CO init " << endl;
-				co->init(2000);
-				cout << "init ok" << endl;
 
 				for (;;) {
+					///////////////////////////
+					///////////////////////////
+					// -------- CO -------- //
+					///////////////////////////
+					///////////////////////////
 					cout << "----- talk to CO -----" << endl;
+					cout << "mux will be " << adr_CO << endl;
+					cout << "init " << endl;
+					co->init(2000);
+					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
 						b->trep(5, 50);
@@ -90,6 +95,14 @@ int main() {
 						}
 						usleep(1000 * 2500);
 					}
+
+					cout << "---- sensor tip ----" << endl;
+					int ht = co->getSensorTypeHex();
+					cout << "hex=" << std::hex << ht << std::dec << endl;
+
+					std::string st = co->getSensorTypeStr();
+					cout << "str=" << st << endl;
+
 
 					b->trep(5, 50);
 					b->trep(5, 50);
@@ -114,18 +127,125 @@ int main() {
 					cout << "humidity " << rh << " % " << endl;
 
 					cout << "----  done  ----\n" << endl;
-
+					cout << endl;
 					usleep(5000 * 1000);
 
-					// pretvaramo se da imamo jos neki senzor
+
+					///////////////////////////
+					///////////////////////////
+					// -------- H2S -------- //
+					///////////////////////////
+					///////////////////////////
+					cout << "----- talk to H2S -----" << endl;
+					cout << "mux will be " << adr_H2S << endl;
+					cout << "init " << endl;
+					h2s->init(2000);
+					cout << "init ok" << endl;
+					cout << "toggle sensor running led a few times, just to know we are here" << endl;
+					for (int i = 0; i < 3; ++i) {
+						b->trep(5, 50);
+						if (h2s->getLedStatus()) {
+							cout << "led should be off" << endl;
+							h2s->setLedOff();
+						} else {
+							cout << "led should be on" << endl;
+							h2s->setLedOn();
+						}
+						usleep(1000 * 2000);
+					}
+
+					cout << "---- sensor tip ----" << endl;
+					ht = h2s->getSensorTypeHex();
+					cout << "hex=" << std::hex << ht << std::dec << endl;
+
+					st = h2s->getSensorTypeStr();
+					cout << "str=" << st << endl;
+
+
 					b->trep(5, 50);
 					b->trep(5, 50);
+					cout << "---- measure ----" << endl;
+
+					dec = h2s->getDecimals();
+					cout << "br decimala " << dec << endl;
+
+					ppm = h2s->getGasConcentrationPpm();
+					cout << "gas ppm " << ppm << endl;
+
+					mg = h2s->getGasConcentrationMgM3();
+					cout << "gas mg/m3 " << mg << endl;
+
+					percOfMax = h2s->getGasPercentageOfMax();
+					cout << "gas percentage of max scale " << percOfMax << endl;
+
+					celsius = h2s->getTemperature();
+					cout << "temperature " << celsius << " C " << endl;
+
+					rh = h2s->getRelativeHumidity();
+					cout << "humidity " << rh << " % " << endl;
+
+					cout << "----  done  ----\n" << endl;
+					cout << endl;
+					usleep(5000 * 1000);
+
+
+
+					///////////////////////////
+					///////////////////////////
+					// -------- O2 -------- //
+					///////////////////////////
+					///////////////////////////
+					cout << "----- talk to O2 -----" << endl;
+					cout << "mux will be " << adr_O2 << endl;
+					cout << "init " << endl;
+					o2->init(2000);
+					cout << "init ok" << endl;
+					cout << "toggle sensor running led a few times, just to know we are here" << endl;
+					for (int i = 0; i < 3; ++i) {
+						b->trep(5, 50);
+						if (o2->getLedStatus()) {
+							cout << "led should be off" << endl;
+							o2->setLedOff();
+						} else {
+							cout << "led should be on" << endl;
+							o2->setLedOn();
+						}
+						usleep(1000 * 2000);
+					}
+
+					cout << "---- sensor tip ----" << endl;
+					ht = o2->getSensorTypeHex();
+					cout << "hex=" << std::hex << ht << std::dec << endl;
+
+					st = o2->getSensorTypeStr();
+					cout << "str=" << st << endl;
+
+
 					b->trep(5, 50);
-					cout << "---- talk to H2S ----" << endl;
-					cout << "---- fejk, ne radim nista, samo malo cekam ----" << endl;
-					h2s->sendRawBytes("proba", sizeof("proba"));
-					usleep(3000 * 1000);
-					cout << "---- done ----\n" << endl;
+					b->trep(5, 50);
+					cout << "---- measure ----" << endl;
+
+					dec = o2->getDecimals();
+					cout << "br decimala " << dec << endl;
+
+					ppm = o2->getGasConcentrationPpm();
+					cout << "gas ppm " << ppm << endl;
+
+					mg = o2->getGasConcentrationMgM3();
+					cout << "gas mg/m3 " << mg << endl;
+
+					percOfMax = o2->getGasPercentageOfMax();
+					cout << "gas percentage of max scale " << percOfMax << endl;
+
+					celsius = o2->getTemperature();
+					cout << "temperature " << celsius << " C " << endl;
+
+					rh = o2->getRelativeHumidity();
+					cout << "humidity " << rh << " % " << endl;
+
+					cout << "----  done  ----\n" << endl;
+					cout << endl;
+					usleep(5000 * 1000);
 
 				}
 				break;
@@ -190,7 +310,7 @@ int main() {
 					cout << "mux addr " << mux->getAddr() << endl;
 					usleep(1000 * 2000);
 
-					mux->setAddr(adr_O2);
+					mux->setAddr(adr_H2S);
 					cout << "mux addr " << mux->getAddr() << endl;
 					usleep(1000 * 2000);
 
@@ -198,6 +318,11 @@ int main() {
 					cout << "mux addr " << mux->getAddr() << endl;
 					usleep(1000 * 2000);
 
+					for (int aa = 8; aa > 0; --aa) {
+						mux->setAddr(aa);
+						cout << "mux addr " << mux->getAddr() << endl;
+						usleep(1000 * 100);
+					}
 					cout << endl;
 				}
 				break;

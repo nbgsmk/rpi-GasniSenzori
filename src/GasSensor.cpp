@@ -63,17 +63,26 @@ GasSensor::~GasSensor() {
  * Perform minimal initialization
  */
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
+	#define DEBUG 0
 	usleep(waitSensorStartup_mS * 1000);
 
 	// Najbezbolniji nacin da sto ranije otkrijem ako ne komuniciram sa senzorom
 	// Nije potreban nikakav rezultat. Ako ne komunicira, dobice se timeout
 	send(cmdRunningLightGetStatus);
 
-	cout << "set passive" << endl;
+	#if DEBUG >= 1
+		cout << "set passive" << endl;
+	#endif
 	send(cmdSetPassiveMode);
-	cout << "set running light ON" << endl;
+
+	#if DEBUG >= 1
+		cout << "set running light ON" << endl;
+	#endif
 	send(cmdRunningLightOn);
-	cout << "get props" << endl;
+
+	#if DEBUG >= 1
+		cout << "get props" << endl;
+	#endif
 	getSensorProperties_D7();
 
 //	send(cmdSetActiveMode);
@@ -141,6 +150,38 @@ void GasSensor::setActiveMode() {
 void GasSensor::setPassiveMode() {
 	send(cmdSetPassiveMode);
 }
+
+
+/**
+ * Tip senzora HEX vrednost. Vidi datasheet
+ */
+int GasSensor::getSensorTypeHex(){
+	return (int) sensorProperties.tip;
+}
+
+
+std::string GasSensor::getSensorTypeStr(){
+	std:string rez = "hmm...neki nepoznat senzor!?";
+	// Raw property je HEX a funkcija castuje na INT.
+	// NE KORISTI FUNKCIJU da se ne zajebes!
+	switch (sensorProperties.tip) {
+		case 0x19:
+			rez = "CO";
+			break;
+
+		case 0x1C:
+			rez = "H2S";
+			break;
+
+		case 0x22:
+			rez = "O2";
+			break;
+
+	};
+
+	return rez;
+}
+
 
 /**
  * @return maximum measurement range from sensor properties

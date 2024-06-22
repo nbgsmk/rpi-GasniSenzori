@@ -27,6 +27,8 @@ public:
 	bool getLedStatus();
 	void setChecksumValidation(bool on_off);	// proverava se checksum rezultata ili se ignorise
 
+	int getSensorTypeHex();						// HEX vrednost - tip senzora
+	std::string getSensorTypeStr();				// na osnovu HEX vracam tekstualni naziv
 	int getMaxRange();							// maksimalni raspon merenja senzora
 	int getDecimals();							// broj decimala u rezultatu
 	int getGasConcentrationPpm();				// koncentracija gasa ppm

@@ -27,9 +27,9 @@
 ///////////////////////
 // Adrese senzora
 //      moj_naziv	S[1..8] (broj na plocici uart mux-a)
-#define adr_CO 			3
-#define adr_H2S			4
-#define adr_O2			5
+#define adr_CO 			4
+#define adr_H2S			5
+#define adr_O2			6
 #define adr_itd			7
 #define adr_DONOTUSE_1	1	// pocetno, izgleda da su svi pinovi floating low, tj adresa 0x000 iliti, po njegovoj numeraciji port 1
 
