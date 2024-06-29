@@ -116,7 +116,13 @@ https://www.eclipse.org/forums/index.php/t/238028/
 https://www.eclipse.org/forums/index.php?t=msg&th=238028&goto=721572&#msg_721572
 ++++++++++++++++++++
 
+pogledati ovo:
+https://www.gurucoding.com/eclipse_as_ide_for_raspberry_pi/04_cross_compilation_setup/
 
+3rd party libraries!!
+https://www.gurucoding.com/eclipse_as_ide_for_raspberry_pi/08_adding_third_party_libraries/
+
+=====================
 development machine:
 
 check sudo privileges
