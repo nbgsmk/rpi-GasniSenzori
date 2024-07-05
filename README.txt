@@ -198,14 +198,13 @@ Ako mu se ne dopada dinamicki linkovan fajl, odgovor je npr
 
 
 
-
-
-
-
-
 Ko je procitao do ovde, svaka mu cast. 
 Za nagradu, neka pogleda https://www.youtube.com/watch?v=T9yFyWsyyGk
 Tamo sve lepo pise.
+
+https://gnutoolchains.com/raspberry/
+
+
 
 REMOTE DEBUGGING
 ----------------
@@ -224,3 +223,27 @@ $ echo "set architecture arm" >> .gdbinit
 
 
 
+
+
+-----------
+
+temperatura i napajanje
+
+$ vcgencmd get_throttled
+  https://www.raspberrypi.com/documentation/computers/os.html#vcgencmd
+  
+ ALL OK
+throttled=0x0 
+  
+
+Bit Hex value   Meaning
+0          1    Under-voltage detected
+1          2    Arm frequency capped
+2          4    Currently throttled
+3          8    Soft temperature limit active
+16     10000    Under-voltage has occurred
+17     20000    Arm frequency capping has occurred
+18     40000    Throttling has occurred
+19     80000    Soft temperature limit has occurred  
+  
+  
