@@ -1,0 +1,96 @@
+
+---- sensor tip ----
+hex=1c
+str=H2S
+---- measure ----
+br decimala 4
+gas ppm 0
+gas mg/m3 0
+gas percentage of max scale 0
+temperature 28 C 
+humidity 46 % 
+----  done  ----
+---- sensor tip ----
+hex=1c
+str=H2S
+---- measure ----
+br decimala 4
+gas ppm 0
+gas mg/m3 0
+gas percentage of max scale 0
+temperature 28 C 
+humidity 46 % 
+----  done  ----
+---- sensor tip ----
+hex=1c
+str=H2S
+---- measure ----
+br decimala 4
+gas ppm 0
+gas mg/m3 0
+gas percentage of max scale 0
+temperature 28 C 
+humidity 46 % 
+----  done  ----
+---- sensor tip ----
+hex=1c
+str=H2S
+---- measure ----
+br decimala 4
+gas ppm 1
+gas mg/m3 1
+gas percentage of max scale 1
+temperature 28 C 
+humidity 46 % 
+----  done  ----
+
+
+Sensor property D1
+D1
+rx (9) chars
+  hex: 1c 00 64 02 00 00 00 20 7a 
+  hex: 1c 00 64 02 00 00 00 20 7a 
+
+
+sensor property D7
+D7
+rx (9) chars
+  hex: ff d7 1c 00 64 02 20 00 87 
+  hex: ff d7 1c 00 64 02 20 00 87 
+
+
+get led status
+FF 01 8A 00 00 00 00 00 75
+rx (9) chars
+  hex: ff 8a 01 00 00 00 00 00 75 
+
+
+Actively reading the gas concentration
+FF 01 86 00 00 00 00 00 79
+rx (9) chars
+  hex: ff 86 00 01 00 64 00 01 14 
+  hex: ff 86 00 01 00 64 00 01 14 
+  hex: ff 86 00 01 00 64 00 01 14 
+  hex: ff 86 00 01 00 64 00 01 14 
+
+
+Combined reading command of gas concentration, temperature, humidity
+FF 01 87 00 00 00 00 00 78
+rx (13) chars
+  hex: ff 87 00 01 00 64 00 01 0b 72 11 bd c8 
+  hex: ff 87 00 01 00 64 00 01 0b 74 11 bb c8 
+  hex: ff 87 00 01 00 64 00 01 0b 74 11 bb c8 
+  hex: ff 87 00 01 00 64 00 01 0b 74 11 bb c8 
+  hex: ff 87 00 01 00 64 00 01 0c 0f 10 9b 4d 
+  hex: ff 87 00 01 00 64 00 01 0c 2b 10 54 78 
+  hex: ff 87 00 01 00 64 00 01 0c 6d 0f e2 a9 
+  hex: ff 87 00 00 00 64 00 00 0c 88 0f af c3 
+  hex: ff 87 00 01 00 64 00 01 0c af 0f 68 e1 
+  hex: ff 87 00 01 00 64 00 01 0c b9 0f 5d e2 
+
+
+
+
+
+
+

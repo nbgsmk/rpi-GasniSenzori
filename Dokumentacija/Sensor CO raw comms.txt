@@ -1,0 +1,84 @@
+
+---- sensor tip ----
+hex=19
+str=CO
+---- measure ----
+br decimala 4
+gas ppm 241
+gas mg/m3 277
+gas percentage of max scale 241
+temperature 29 C 
+humidity 47 % 
+----  done  ----
+hex=19
+str=CO
+---- measure ----
+br decimala 4
+gas ppm 238
+gas mg/m3 273
+gas percentage of max scale 238
+temperature 29 C 
+humidity 46 % 
+----  done  ----
+
+
+Sensor property D1
+D1
+rx (9) chars
+  hex: 19 00 64 02 00 00 00 20 7a 
+  hex: 19 00 64 02 00 00 00 20 7a 
+
+
+sensor property D7
+D7
+rx (9) chars
+  hex: ff d7 19 00 64 02 20 00 8a 
+  hex: ff d7 19 00 64 02 20 00 8a 
+ 
+
+get led status
+FF 01 8A 00 00 00 00 00 75
+rx (9) chars
+  hex: ff 8a 01 00 00 00 00 00 75 
+  hex: ff 8a 01 00 00 00 00 00 75 
+
+
+Actively reading the gas concentration
+FF 01 86 00 00 00 00 00 79
+rx (9) chars
+  hex: ff 86 01 15 00 64 00 f1 0f 
+  hex: ff 86 01 15 00 64 00 f1 0f 
+  hex: ff 86 01 16 00 64 00 f2 0d 
+  hex: ff 86 01 16 00 64 00 f2 0d 
+  hex: ff 86 01 16 00 64 00 f2 0d 
+// malo dunes u njega
+  hex: ff 86 01 3b 00 64 01 12 c7 
+  hex: ff 86 01 45 00 64 01 1b b4 
+  hex: ff 86 01 48 00 64 01 1e ae 
+  hex: ff 86 01 1d 00 64 00 f8 00 
+  hex: ff 86 01 1c 00 64 00 f7 02 
+  hex: ff 86 01 1c 00 64 00 f7 02 
+// kad se ponovo stabilizovao
+  hex: ff 86 01 16 00 64 00 f2 0d 
+  hex: ff 86 01 16 00 64 00 f2 0d 
+
+
+
+Combined reading command of gas concentration, temperature, humidity
+FF 01 87 00 00 00 00 00 78
+rx (13) chars
+  hex: ff 87 01 15 00 64 00 f1 0b a0 12 58 f9 
+  hex: ff 87 01 15 00 64 00 f1 0b a0 12 45 0c 
+  hex: ff 87 01 15 00 64 00 f1 0b a0 12 45 0c 
+  hex: ff 87 01 15 00 64 00 f1 0b a3 12 3a 14 
+  hex: ff 87 01 15 00 64 00 f1 0b a3 12 3a 14 
+  hex: ff 87 01 15 00 64 00 f1 0b a2 12 3a 15 
+  hex: ff 87 01 14 00 64 00 f0 0b a2 12 3a 17 
+  hex: ff 87 01 12 00 64 00 ef 0b a3 12 3a 19 
+
+
+
+
+
+
+
