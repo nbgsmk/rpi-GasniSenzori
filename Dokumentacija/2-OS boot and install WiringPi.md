@@ -1,14 +1,20 @@
 
 
-1 Raspberry BOOT
-================
+OS boot
+=======
 
-Kad je pripremljena SD kartica putem rpi-imagera, ubaciti je u rpi i ukljuciti ga. Prvo startovanje ce trajati oko 3-4 minuta (rpi zero) a kasnije ce biti dosta brze, oko 40-ak sekundi. Strpljenje!
+1 Kako se konektuje
+-------------------
+
+Kad je pripremljena SD kartica putem rpi-imagera, ubaciti je u rpi i ukljuciti ga. Prvo startovanje ce trajati oko 3-4 minuta (Rpi Zero W) a kasnije ce biti dosta brze, oko 40-ak sekundi. Strpljenje!
 
 A zatim:
 
-(win) cmd prompt -> 
-$ ping zero.local (ime koje smo dali prilikom "OS customization")
+(Win)  
+cmd prompt ->  
+
+	$ ping zero.local  
+	(zero.local = ime koje smo dali prilikom "OS customization")
 
 Ako nema odgovora:
 - konektuj se na ruter i probaj da vidis koju adresu je dobio rpi. Ako je uopste dobio.
@@ -19,19 +25,32 @@ Ako ima odgvora na ping:
 - najbolje ako se odmah vidi sa koje adrese dolazi odgovor
 - na mojem ruteru je je ping reply ipv6 pa ne znam ipv4 adresu
 
-		ping zero.local
+		$ ping zero.local
 		Pinging zero.local [fe80::df2d:3518:3d4:c11a%19] with 32 bytes of data:
-		Reply from fe80::df2d:3518:3d4:c11a%19: time=18ms
+		Reply from fe80::df2d:3518:3d4:c11a%19: time=12ms
+		Reply from fe80::df2d:3518:3d4:c11a%19: time=16ms
+		Reply from fe80::df2d:3518:3d4:c11a%19: time=14ms
 
-$ ssh zero.local -> potvrdi sta god trazi prilikom ssh konekcije
--> sada smo na raspberry-ju
+U svakom slucaju, logujemo se na Rpi, bilo putem naziva bilo putem adrese:
 
-Ako konekcija nije prihvacena, zaboravio si da kod "OS customization" ukljucis SSH servis!
+	$ ssh zero.local
+	ili 
+	$ ssh 192.168.0.xx 
+	
+	 -> potvrdi sta god trazi prilikom ssh konekcije
+	...i sada smo na raspberry-ju
 
+
+Ako konekcija nije prihvacena, zaboravio si da kod "OS customization" **ukljucis SSH servis!**
+
+Koja je ip adresa dobijena?  
 Kad se logujes na raspberry:
 
-peca@rpi$ ip address
--> pronaci ip adresu i, po potrebi, koristiti za ubuduce konektovanje
+	$ ip address
+	ili
+	$ ifconfig
+	
+	-> pronaci ip adresu i, po potrebi, koristiti za ubuduce konektovanje
 
 
 To je sve
@@ -43,13 +62,13 @@ To je sve
 2.1 UART, WiringPi
 ------------------
 
-https://learn.sparkfun.com/tutorials/raspberry-gpio/c-wiringpi-setup
+Odlicno uputstvo, delovi preuzeti iz: [https://learn.sparkfun.com/tutorials/raspberry-gpio/c-wiringpi-setup](https://learn.sparkfun.com/tutorials/raspberry-gpio/c-wiringpi-setup)
 
 U verziji "Legacy 32-bit Lite" koju mi koristimo, potrebno je instalirati:
 
 * git
 
-		sudo apt-get install git-core
+		$ sudo apt-get install git-core
 		
 * WiringPi
 
@@ -97,56 +116,62 @@ U verziji "Legacy 32-bit Lite" koju mi koristimo, potrebno je instalirati:
 		| BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
 		+-----+-----+---------+------+---+-Pi ZeroW-+---+------+---------+-----+-----+
 		
-2.1.1 Pinovi 14 i 15 (kolona BCM) su **predvidjeni** za uart ali trenutno povezani samo kao **obican gpio**
+2.1.1 Pinovi 14 i 15 (kolona BCM) su **predvidjeni** za uart ali su pocetno povezani samo kao **obican gpio**
 
-a) Da bi ih omogucili, potrebno je (iz komandne linije)
+Mozemo ih omoguciti putem **raspi-config**
 
-		SSH
-		---
-		$ sudo raspi-config nonint do_ssh <0/1>
-		where: 
-		0: enable SSH
-		1: disable SSH
-		
-		Serial Port
-		-----------
-		$ sudo raspi-config nonint do_serial_hw <0/1/2>
-		where: 
-		0: enable serial port
-		1: disable serial port
-		2: ne pise sta je! :-)
-		
-		Serial system console
-		---------------------
-		sudo raspi-config nonint do_serial_cons <0/1/2>
-		where: 
-		0: enable console over serial port
-		1: disable console over serial port
+a) Pomocu nazovi-grafickog interfejsa
 
-
-b) Ili putem nazovi-grafickog interfejsa
-
-		$ sudo raspi-config
-
-		Pojavi se nekakav terminalski gui
-
-		zatim birati opcije
-		 ->  3 - Interface options
-			-> I6 - Serial port
+	$ sudo raspi-config
+	
+	Pojavi se nekakav terminalski gui
+	zatim birati opcije
+	
+	->  3 - Interface options
+		-> I6 - Serial port
 			-> Would you like a login shell to be accessible over serial? -> **NO**
 			-> Would you like the serial port hardware to be enabled? -> **YES**
+
+b) direktno iz komandne linija (proveriti da li ovo radi)
+
+	za Serijski port
+	----------------
+	$ sudo raspi-config nonint do_serial_hw <0/1/2>
+	where: 
+	0: enable serial port
+	1: disable serial port
+	2: ne pise sta je! :-)
 	
-		Potvrdi, izadji. Ako trazi reboot -> OK
+	za sistemsku konzolu na serijskom portu
+	---------------------------------------
+	$ sudo raspi-config nonint do_serial_cons <0/1/2>
+	where: 
+	0: enable console over serial port
+	1: disable console over serial port
+	
+	za SSH, ako vec nije
+	--------------------
+	$ sudo raspi-config nonint do_ssh <0/1>
+	where: 
+	0: enable SSH
+	1: disable SSH
+	
 
-Prati sa "ping zero.local", naravno.  
-Kad ponovo postane dostupan, loguj se
 
+	
 
+Potvrdi, izadji. Ako trazi reboot -> OK
+
+Pratiti sa "ping zero.local"  
+
+Kad ponovo postane dostupan, loguj se.  
+
+Spreman je za dalji rad.
 
 
 
 2.2 Provera UART / WiringPi
-------------------------------
+---------------------------
 
 Kad se ponovo logujes:
 
@@ -160,51 +185,78 @@ Kad se ponovo logujes:
 		|     |     |      0v |      |   |  9 || 10 | 1 | ALT5 | RxD     | 16  | 15  |
 		...
 	
-Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je na gpio header povezan nas nasusni UART. Pfijuu konacno mogu da odahnem!
+Pinovi BCM 14 i 15 sada treba da imaju mode **ALT5**, sto u prevodu znaci da je na gpio header povezan nas nasusni UART. Pfhhh konacno!
 
 
-2.3 WiringPi na development masini
-----------------------------------
+2.3 --PRIVREMENO-- WiringPi na development masini 
+-------------------------------------------------
 
-Na generickom linuxu se moze instalirati WiringPi (bice neophodan za **cross compajler**) ali odgovor ce biti
+Instaliramo WiringPi na development masini (genericki linux), istim komandama kao za Raspberry. Ovo je neophodno za syntax checking, highlighting i kompajliranje aplikacije tokom pisanja. Provera:  
 
-		$ gpio -v
-		Oops: Unable to determine Raspberry Pi board revision 
-		from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
-		      WiringPi    : 3.6
-		      system name : Linux
-		      release     : 6.5.0-35-generic
-		      version     : #35-Ubuntu SMP PREEMPT_DYNAMIC Fri Apr 26 11:23:57 UTC 2024
-		      machine     : x86_64
-		 -> This is not an ARM architecture; it cannot be a Raspberry Pi.
+	$ gpio -v
+	Oops: Unable to determine Raspberry Pi board revision 
+	from /proc/device-tree/system/linux,revision and from /proc/cpuinfo
+		WiringPi    : 3.6
+		system name : Linux
+		release     : 6.5.0-35-generic
+		version     : #35-Ubuntu SMP PREEMPT_DYNAMIC Fri Apr 26 11:23:57 UTC 2024
+		machine     : x86_64
+		-> This is not an ARM architecture; it cannot be a Raspberry Pi.
 		...
 
-Instaliraj ga, iste su komande kao za raspberry. Trebace ti!!  
-Toliko.  
+To je dovoljno za pocetak.  
+
+Medjutim, dinamicko linkovanje bilo kakve aplikacije na development masini daje executable koja na rpi nije upotrebljiv zbog pogresnh verzija sistemskih dependency-ja. Staticko linkovanje takodje ne prolazi, a WiringPi dokumentacija na githubu to potvrdjuje ("no more static linking!", imaju razloge). U oba slucaja, buildovani executable nije upotrebljiv.  
+
+Workaround br 1 (radi ali je naporno):
+- aplikacija se razvija i kompajlira na development masini, gde se proveri sintaksa itd.
+- svi .cpp source fajlovi se prebace na rpi (project property -> post-build step -> scp \*.cpp...na target)
+- tamo se ponovo rucno kompajlira sve, komandom "g++ *.cpp" u terminalu, a zatim pokrene executable u terminalu. Najgluplja metoda, totalno pesacka. Nema nikakve mogucnosti za debugging. Nikakve!  
+
+**Kad pronadjem nacin da se WinringPi pravilno ukljuci u projekat kao dependency, sa dinamickim linkovanjem na development masini (a da bude upotrebljiv na Rpi), vrlo rado cu dopuniti uputstvo.**  
+
+Workaround br 2 (RADI):  
+- pisati aplikaciju totalno bez upotrebe WiringPi biblioteke. Tu-i-tamo ima uputstava na netu. Nije lako!
+- builduje / linkje se sa flagom "-static" (project properties -> c++ build -> settings > c++ linker -> miscelanious)
+- debug configuration -> remote c++ application:  
+&nbsp; -> connection -> kreirati remote konekciju na rpi  
+&nbsp; -> using GDB (DSF) automatic remote debugging launcher  
+ Prilikom debug-a, executable se automatski kopira na target i pokrece. Debugger se konektuje i sve radi fenomenalno! Trenutno tako radim. U odnosu na nikakav debugging, ovo je otkrovenje!  
+
+
+**Detaljno u fajlu [3-Cross compiler and remote debugger.md](3-Cross compiler and remote debugger.md)**  
+
 
 
 3 Use SSH Keys to Connect Without a Password
 ----------------------------------------------
 
-SSH keys ce biti potrebni za remote debugging, kao i da bi se lakse logovao ubuduce. Generisem kljuc na host masini. U mojem slucaju je LINUX. Ako koristis windows za linux development, onda si car, snaci ces se :-) 
+SSH keys ce biti potrebni za remote debugging, kao i za logovanje ubuduce.  
 
-		host$ ssh-keygen -t rsa
-		
-		Potvrdi par puta sa [enter]. Za ove potrebe ne zelim nikakav passphrase za ssh key.
+Generisati ssh key na development racunaru (Linux). Ako koristis windows za linux development, onda si car, snaci ces se i bez uputstva :-) 
 
-Kopiraj kljuc sa host masine na raspberry (recimo da je adresa 10.0.0.10). Moze i zero.local ako imas srece da radi.
+	developer$ ssh-keygen -t rsa
+	
+	Potvrdi par puta sa [enter]. Za ove potrebe ne zelimo nikakav passphrase za ssh key.
 
-		host$ ssh-copy-id peca@10.0.0.10
-		
-		Potvrditi i uneti password kad trazi
-		
-Ubuduce moze da se koristi SSH bez passworda. Buduci da je development okruzenje kod kuce a ne javna mreza, nemoj kukati u vezi bezbednosti.
+Kopiraj kljuc sa host masine na raspberry (npr adresa je 10.0.0.10)
 
-		host$ ssh peca@10.0.0.10
+	developer$ ssh-copy-id zoki@10.0.0.10
+	ili
+	developer$ ssh-copy-id zoki@zero.local
+	(ako imas srece da moze po nazivu)
+	
+	Potvrditi i uneti password kad trazi
+	
+	Povera:
+	developer$ ssh zoki@10.0.0.10
+	
+	-> zoki@zero$
+	
+	Tamo sam. Nije trazilo password. Radi!
 		
-		-> peca@zero:$
-		
-		Tamo sam! Radi!
+Posto je ovo development okruzenje kod kuce a ne javna mreza, zanemaricemo passwprde za sada.
+
 
 
 
