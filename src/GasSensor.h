@@ -6,7 +6,7 @@
 #ifndef SRC_GASSENSOR_H_
 #define SRC_GASSENSOR_H_
 
-#define SENSOR_DATA_ERROR (int)-1
+#define MEASUREMENT_ERROR (int)-1
 
 
 #include "UartMux.h"
@@ -14,7 +14,6 @@
 
 
 class GasSensor {
-
 public:
 	GasSensor(MuxAdr_t muxAddress, int uartHandle);
 	virtual ~GasSensor();
@@ -25,7 +24,8 @@ public:
 	void setLedOff();
 	bool getLedStatus();
 	int getMuxAddress();						// adresa na uart multiplekseru
-	void setChecksumValidation(bool on_off);	// proverava se checksum rezultata ili se ignorise
+	void setChecksumValidatorState(bool state);	// proverava se checksum rezultata ili se ignorise
+	bool getChecksumValidatorState();
 
 	int getSensorTypeHex();						// HEX vrednost - tip senzora
 	std::string getSensorTypeStr();				// na osnovu HEX vracam tekstualni naziv
@@ -45,11 +45,29 @@ public:
 
 
 private:
+	// Error handling je neophodan
+	int CONSOLE_DEBUG = 0;
+	enum ErrCodes_t {
+		OK = 0,
+		NOT_DEFINED,
+		INIT_FAIL,
+		UNEXPECTED_SENSOR_TYPE,
+		WRONG_RESPONSE_HEADER,
+		SENSOR_TIMEOUT,
+		MEASUREMENT_INCOMPLETE,
+		MEASUREMENT_CHECKSUM_OK,
+		MEASUREMENT_CHECKSUM_FAIL,
+		WiringPi_NOT_AVAILABLE
+	};
+	ErrCodes_t H_STAT = NOT_DEFINED;
+
+
+
 	int muxAddress;
 	bool runningLed;
 	int uartHandle;
 	bool initCompleted = false;
-	bool checksumValidation = true;
+	bool checksumValidatorIsActive = true;
 
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 

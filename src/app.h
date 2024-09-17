@@ -8,6 +8,17 @@
 #ifndef APP_H_
 #define APP_H_
 
+// Error handling je neophodan
+int CONSOLE_DEBUG = 1; 	// 0=silent operation; sve ostalo -> print na stdout, stderr...
+enum ErrCodes_t {
+	OK = 0,
+	NOT_DEFINED,
+	UART_NOT_AVAILABLE,
+	WiringPi_NOT_AVAILABLE
+};
+ErrCodes_t H_STATUS = NOT_DEFINED;
+
+
 
 int uartFileDescriptor;
 

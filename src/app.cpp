@@ -29,36 +29,66 @@
 using namespace std;
 
 int main() {
-	cout << "Hey hey" << endl;
+	cout << "Hey hey! Krecemo!" << endl;
 
-	if (  (uartFileDescriptor=serialOpen (hwUart_ttyS0, 9600)) >= 0  ) {
-		// cout << "uart=" << hwUart_ttyS0 << endl;
+	//---------------------------------------
+	// Inicijalizacija i osnovni error kodovi
+	//---------------------------------------
 
-	} else if ( (uartFileDescriptor=serialOpen (hwUart_serial0, 9600)) >= 0 ) {
-		// cout << "uart=" << hwUart_serial0 << endl;
+	H_STATUS = ErrCodes_t::NOT_DEFINED;
+
+	if (  (uartFileDescriptor=serialOpen(hwUart_ttyS0, 9600)) >= 0  ) {
+		// /dev/tty0 i /dev/serial0 su jedno te isto na Rpi
+		H_STATUS = ErrCodes_t::OK;
+		if (CONSOLE_DEBUG > 0) {
+			cout << "uart=" << hwUart_ttyS0 << " ok" << endl;
+		}
+
+	} else if ( (uartFileDescriptor=serialOpen(hwUart_serial0, 9600)) >= 0 ) {
+		// /dev/tty0 i /dev/serial0 su jedno te isto na Rpi
+		H_STATUS = ErrCodes_t::OK;
+		if (CONSOLE_DEBUG > 0) {
+			cout << "uart=" << hwUart_serial0 << " ok" << endl;
+		}
 
 	} else {
-		cerr << "Could not open " << hwUart_ttyS0 << " or " << hwUart_serial0 << ". We should be running _only_ on rpi zero w, rpi 3 or rpi 4." << endl;
-		std::throw_with_nested(std::runtime_error("Did you forget to run raspi-config to enable serial peripheral?"));
+		// nisam mogao da otvorim serijski port
+		H_STATUS = ErrCodes_t::UART_NOT_AVAILABLE;
+		if (CONSOLE_DEBUG > 0) {
+			cerr << "Could not open " << hwUart_ttyS0 << " or " << hwUart_serial0 << ". We should be running _only_ on rpi zero w, rpi 3 or rpi 4." << endl;
+			cerr << "Did you forget to run raspi-config to enable serial peripheral?" << endl;
+		}
+		return H_STATUS;	// ako nemam uart, nema svrhe ici dalje
 	}
+
+	// UART je dostupan, za pocetak. Idemo dalje.
 
 	int we = wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
 	if (we == -1) {
-		cerr << "Unable to start wiringPi! Error " << errno << endl;
-		std::throw_with_nested(std::runtime_error("Unable to start wiringPi: %s\n"));
+		H_STATUS = ErrCodes_t::WiringPi_NOT_AVAILABLE;
+		if (CONSOLE_DEBUG > 0) {
+			cerr << "Unable to start wiringPi! Error " << errno << endl;
+			cerr << "Unable to start wiringPi: %s\n" << endl;
+		}
+		return H_STATUS;	// ako nemam WiringPi, nema svrhe ici dalje
 	}
+
+
+	// UART i WiringPi su dostupni. Mozemo malo da odahnemo.
 
 	pinMode(UartMuX_pinS1, OUTPUT);
 	pinMode(UartMuX_pinS2, OUTPUT);
 	pinMode(UartMuX_pinS3, OUTPUT);
 
+	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
+	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
+	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+
+	// To je to. Inicijalizacija i osnovni error kodovi
+
 	while (1) {
 
 		Blinkovi *b = new Blinkovi();
-		GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
-		GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
-		GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
-
 		b->trep(1000, 1000);
 		b->trep(1000, 1000);
 
@@ -89,7 +119,7 @@ int main() {
 					cout << "----- talk to CO -----" << endl;
 					cout << "mux will be " << adr_CO << endl;
 					cout << "init " << endl;
-					co->init(2000);
+//					co->init(2000);
 					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
@@ -147,7 +177,7 @@ int main() {
 					cout << "----- talk to H2S -----" << endl;
 					cout << "mux will be " << adr_H2S << endl;
 					cout << "init " << endl;
-					h2s->init(2000);
+//					h2s->init(2000);
 					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
@@ -206,7 +236,7 @@ int main() {
 					cout << "----- talk to O2 -----" << endl;
 					cout << "mux will be " << adr_O2 << endl;
 					cout << "init " << endl;
-					o2->init(2000);
+//					o2->init(2000);
 					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
@@ -345,9 +375,9 @@ int main() {
 				GasSensor *sa = new GasSensor(4, uartFileDescriptor);
 				GasSensor *sb = new GasSensor(5, uartFileDescriptor);
 				GasSensor *sc = new GasSensor(6, uartFileDescriptor);
-				sa->init(2000);
-				sb->init(2000);
-				sc->init(2000);
+//				sa->init(2000);
+//				sb->init(2000);
+//				sc->init(2000);
 
 				cout << "-------------- self-aware -------------" << endl;
 				cout << "--- ko je na ovoj adresi i sta meri ---" << endl;
@@ -366,7 +396,7 @@ int main() {
 
 				cout << "senzor na nepostojecoj adresi 2 ?" << endl;
 				GasSensor *gx = new GasSensor(2, uartFileDescriptor);
-				gx->init(1000);
+//				gx->init(1000);
 				cout << "nepostojeci meri " << gx->getGasConcentrationPpm() << endl;
 				cout << "------------------- toliko -------------------" << endl;
 				return 0;
