@@ -53,8 +53,7 @@ GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle) {
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
 	this->uartHandle = uartHandle;
-
-
+	init(2000);
 }
 
 GasSensor::~GasSensor() {
@@ -67,8 +66,6 @@ GasSensor::~GasSensor() {
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	#define DEBUG 0
 	usleep(waitSensorStartup_mS * 1000);		// Malo vremena da se senzor stabilizuje nakon power-up
-
-	this->initCompleted = true;
 
 	// Najbezbolniji nacin da sto ranije otkrijem ako ne komuniciram sa senzorom
 	// Nije potreban nikakav rezultat. Ako ne komunicira, dobice se timeout
@@ -91,6 +88,8 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
+
+	this->initCompleted = true;
 
 }
 

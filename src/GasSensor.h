@@ -19,7 +19,6 @@ public:
 	GasSensor(MuxAdr_t muxAddress, int uartHandle);
 	virtual ~GasSensor();
 
-	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
@@ -51,6 +50,8 @@ private:
 	int uartHandle;
 	bool initCompleted = false;
 	bool checksumValidation = true;
+
+	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 
 	struct {
 		uint8_t tip;
