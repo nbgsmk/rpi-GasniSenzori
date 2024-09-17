@@ -229,6 +229,9 @@ int GasSensor::getGasConcentrationPpm() {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
 	}
+	if ( rezultat < 0 ) {
+		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
+	}
 	return (int) rezultat;
 }
 
@@ -248,6 +251,9 @@ int GasSensor::getGasConcentrationMgM3() {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
 	};
+	if ( rezultat < 0 ) {
+		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
+	}
 	return (int) rezultat;
 }
 
@@ -266,6 +272,9 @@ int GasSensor::getGasPercentageOfMax() {
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
+	}
+	if ( (rezultat < 0) || (rezultat > 100) ) {
+		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
 	}
 	return (int) rezultat;
 }
@@ -304,6 +313,9 @@ float GasSensor::getRelativeHumidity() {
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
+	}
+	if ( (rezultat < 0) || (rezultat > 100) ) {
+		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
 	}
 	return (int) rezultat;
 }
