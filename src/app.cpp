@@ -100,7 +100,7 @@ int main() {
 		 * blok 5 = svaki senzor bi morao da zna svoju adresu
 		 */
 
-		int blok = 1;
+		int blok = 4;
 		cout << "test blok " << blok << endl;
 
 		switch (blok) {

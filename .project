@@ -28,7 +28,7 @@
 		<link>
 			<name>WiringPi</name>
 			<type>2</type>
-			<location>/home/peca/Dev_cpp/WiringPi</location>
+			<location>/home/peca/Dev_cpp/WiringPi/debian-template/wiringPi/usr/include</location>
 		</link>
 	</linkedResources>
 </projectDescription>

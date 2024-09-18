@@ -46,7 +46,7 @@ public:
 
 private:
 	// Error handling je neophodan
-	int CONSOLE_DEBUG = 0;
+	int CONSOLE_DEBUG = 2;
 	enum ErrCodes_t {
 		OK = 0,
 		NOT_DEFINED,

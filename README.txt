@@ -184,3 +184,46 @@ Bit Hex value   Meaning
 19     80000    Soft temperature limit has occurred  
   
   
+  
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+unpack a .deb package and use its contents for linking in Eclipse CDT
+
+dpkg-deb -x <package_name>.deb <output_directory>
+
+Typically, libraries are located in 	usr/lib 	or 	usr/local/lib, 
+and headers are in 						usr/include or 	usr/local/include
+
+Eclipse:
+
+Include Paths:
+	Project Properties > C/C++ General > Paths and Symbols -> add path to the header files extracted from the .deb package
+
+Library Paths:
+	Libraries tab -> add the path to the libraries extracted from the .deb package.
+
+Library Names:
+	Names of the libraries to link against (without the lib prefix and .so suffix)
+
+EXAMPLE:
+	Extracted 
+	Libraries: example_contents/usr/lib
+	Headers: example_contents/usr/include
+	
+	Configure eclipse:
+	Include Paths: example_contents/usr/include.
+	Library Paths: example_contents/usr/lib.
+	Library Names: If you have libexample.so, add example
+
+
+
+
+
+
+
+
+
+
+  

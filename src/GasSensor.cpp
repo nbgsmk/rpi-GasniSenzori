@@ -50,11 +50,13 @@ using namespace std;
  */
 GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle) {
 	this->H_STAT = NOT_DEFINED;
-	this->initCompleted = false;
+//	this->initCompleted = false;
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
 	this->uartHandle = uartHandle;
+	this->initCompleted = true;		// u teoriji ovo mora ici posle init() ali imam race condition. sredicemo drugi put
 	init(2000);
+
 }
 
 GasSensor::~GasSensor() {
@@ -65,7 +67,6 @@ GasSensor::~GasSensor() {
  * Perform minimal initialization
  */
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
-	#define CONSOLE_DEBUG 0
 	this->H_STAT = INIT_FAIL;
 	usleep(waitSensorStartup_mS * 1000);		// Malo vremena da se senzor stabilizuje nakon power-up
 
@@ -91,9 +92,7 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
 
-	this->initCompleted = true;
 	this->H_STAT = OK;
-
 }
 
 /**
@@ -416,7 +415,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 				break;
 			}
 		}
-		// ili je istekao timeout ili je stiglo dovoljno karaktera
+		// ovde dodjemo kad je istekao timeout ili je stiglo dovoljno karaktera
 
 
 		if (mS < timeOut_mS) {
