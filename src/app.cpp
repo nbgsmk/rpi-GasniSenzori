@@ -29,7 +29,7 @@
 using namespace std;
 
 int main() {
-	cout << "Hey hey! Krecemo!" << endl;
+	cout << "Hey hey!" << endl;
 
 	//---------------------------------------
 	// Inicijalizacija i osnovni error kodovi
@@ -98,9 +98,10 @@ int main() {
 		 * blok 3 = sensor response time (ispada da je oko 30-4mS)
 		 * blok 4 = UartMux test
 		 * blok 5 = svaki senzor bi morao da zna svoju adresu
+		 * blok 6 = prozivka u krug
 		 */
 
-		int blok = 4;
+		int blok = 1;
 		cout << "test blok " << blok << endl;
 
 		switch (blok) {
@@ -118,9 +119,6 @@ int main() {
 					///////////////////////////
 					cout << "----- talk to CO -----" << endl;
 					cout << "mux will be " << adr_CO << endl;
-					cout << "init " << endl;
-//					co->init(2000);
-					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
 						b->trep(5, 50);
@@ -176,9 +174,6 @@ int main() {
 					///////////////////////////
 					cout << "----- talk to H2S -----" << endl;
 					cout << "mux will be " << adr_H2S << endl;
-					cout << "init " << endl;
-//					h2s->init(2000);
-					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
 						b->trep(5, 50);
@@ -235,9 +230,6 @@ int main() {
 					///////////////////////////
 					cout << "----- talk to O2 -----" << endl;
 					cout << "mux will be " << adr_O2 << endl;
-					cout << "init " << endl;
-//					o2->init(2000);
-					cout << "init ok" << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
 						b->trep(5, 50);
@@ -375,9 +367,6 @@ int main() {
 				GasSensor *sa = new GasSensor(4, uartFileDescriptor);
 				GasSensor *sb = new GasSensor(5, uartFileDescriptor);
 				GasSensor *sc = new GasSensor(6, uartFileDescriptor);
-//				sa->init(2000);
-//				sb->init(2000);
-//				sc->init(2000);
 
 				cout << "-------------- self-aware -------------" << endl;
 				cout << "--- ko je na ovoj adresi i sta meri ---" << endl;
@@ -396,12 +385,28 @@ int main() {
 
 				cout << "senzor na nepostojecoj adresi 2 ?" << endl;
 				GasSensor *gx = new GasSensor(2, uartFileDescriptor);
-//				gx->init(1000);
 				cout << "nepostojeci meri " << gx->getGasConcentrationPpm() << endl;
 				cout << "------------------- toliko -------------------" << endl;
 				return 0;
 
 				break;
+			}
+
+			//////////////////////////
+			// Prozivka u krug, u krug
+			//////////////////////////
+			case 6: {
+				for ( ; ; ) {
+					cout << endl;
+					GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
+					cout << "--------" << endl;
+					GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
+					cout << "--------" << endl;
+					GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+					cout << "--------" << endl;
+					cout << endl;
+				}
+
 			}
 
 		}

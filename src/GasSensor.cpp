@@ -70,27 +70,45 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	this->H_STAT = INIT_FAIL;
 	usleep(waitSensorStartup_mS * 1000);		// Malo vremena da se senzor stabilizuje nakon power-up
 
+	if(CONSOLE_DEBUG >=1){
+		cout << "init: mux adresa " << getMuxAddress() << endl;
+	}
+
 	// Najbezbolniji nacin da sto ranije otkrijem ako ne komuniciram sa senzorom
 	// Nije potreban nikakav rezultat. Ako ne komunicira, dobice se timeout
+	if(CONSOLE_DEBUG >=2){
+		cout << "init: early timeout / connection check" << endl;
+	}
 	send(cmdRunningLightGetStatus);
 
-	if(CONSOLE_DEBUG > 0){
-		cout << "set passive" << endl;
+	if(CONSOLE_DEBUG >=2){
+		cout << "init: get props" << endl;
+	}
+	getSensorProperties_D7();
+	if(CONSOLE_DEBUG >=1){
+		cout << "init: ja sam senzor " << getSensorTypeHex() << endl;
+	}
+
+	if(CONSOLE_DEBUG >=2){
+		cout << "init: set passive" << endl;
 	}
 	send(cmdSetPassiveMode);
 
-	if(CONSOLE_DEBUG > 0){
-		cout << "set running light ON" << endl;
+	if(CONSOLE_DEBUG >=2){
+		cout << "init: set running light ON" << endl;
 	}
 	send(cmdRunningLightOn);
 
-	if(CONSOLE_DEBUG > 0){
-		cout << "get props" << endl;
-	}
-	getSensorProperties_D7();
-
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
+
+	if(CONSOLE_DEBUG >=1){
+		if(H_STAT == OK) {
+			cout << "init: ok" << endl;
+		} else {
+			cout << "init errors! stat=" << H_STAT << endl;
+		}
+	}
 
 	this->H_STAT = OK;
 }
@@ -357,8 +375,8 @@ bool GasSensor::getLedStatus() {
  *
  * functionality:
  * Send raw command to sensor and wait for a specific number of bytes in reply.
- * If any reply is expected, checksum will be checked (configurable true / false) and H_STATUS will be set.
- * If a timeout occurs, H_STATUS will be set.
+ * If any reply is expected, checksum will be checked (configurable true / false) and H_STAT will be set.
+ * If a timeout occurs, H_STAT will be set.
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	this->H_STAT = OK;
@@ -374,9 +392,9 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	reply.clear();
 	serialFlush(this->uartHandle);
 
-	if(CONSOLE_DEBUG >= 1) {
+	if(CONSOLE_DEBUG >= 2) {
 		cout << "send sajz " << txStruct.cmd.size() << ", will expect " << txStruct.expectedReplyLen << endl;
-		if(CONSOLE_DEBUG >= 2) {
+		if(CONSOLE_DEBUG >= 3) {
 			cout << "cmd to send:";
 			for (unsigned int i = 0; i < txStruct.cmd.size(); ++i) {
 				cout << " " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << std::dec;
