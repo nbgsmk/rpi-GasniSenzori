@@ -82,7 +82,8 @@ int main() {
 
 	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
 	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
-	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+//	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+	GasSensor *o2 = new GasSensor(adr_CO, uartFileDescriptor);
 
 	// To je to. Inicijalizacija i osnovni error kodovi
 
