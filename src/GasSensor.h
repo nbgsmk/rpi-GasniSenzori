@@ -18,6 +18,18 @@ public:
 	GasSensor(MuxAdr_t muxAddress, int uartHandle);
 	virtual ~GasSensor();
 
+	enum ErrCodes_t {
+		OK = 0,
+		NOT_DEFINED,
+		INIT_FAIL,
+		UNEXPECTED_SENSOR_TYPE,
+		WRONG_RESPONSE_HEADER,
+		SENSOR_TIMEOUT,
+		MEASUREMENT_INCOMPLETE,
+		MEASUREMENT_CHECKSUM_FAIL,
+		MEASUREMENT_OUT_OF_RANGE,
+	};
+
 	void setActiveMode();
 	void setPassiveMode();
 	void setLedOn();
@@ -34,8 +46,8 @@ public:
 	int getGasConcentrationPpm();				// koncentracija gasa ppm
 	int getGasConcentrationMgM3();				// koncentracija gasa ug/m3
 	int getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
-	float getTemperature();						// sve zajedno merimo
-	float getRelativeHumidity();				// sve zajedno merimo
+	int getTemperature();						// sve zajedno merimo
+	int getRelativeHumidity();				// sve zajedno merimo
 
 	// debug only
 	void sendRawBytes(const char *rawBytes, unsigned int size);
@@ -47,26 +59,12 @@ public:
 private:
 	// Error handling je neophodan
 	int CONSOLE_DEBUG = 1;
-	enum ErrCodes_t {
-		OK = 0,
-		NOT_DEFINED,
-		INIT_FAIL,
-		UNEXPECTED_SENSOR_TYPE,
-		WRONG_RESPONSE_HEADER,
-		SENSOR_TIMEOUT,
-		MEASUREMENT_INCOMPLETE,
-		MEASUREMENT_CHECKSUM_OK,
-		MEASUREMENT_CHECKSUM_FAIL,
-		MEASUREMENT_OUT_OF_RANGE,
-	};
+	int ERROR_CNT = 0;
 	ErrCodes_t H_STAT = NOT_DEFINED;
-
-
 
 	int muxAddress;
 	bool runningLed;
 	int uartHandle;
-	bool initCompleted = false;
 	bool checksumValidatorIsActive = true;
 
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip

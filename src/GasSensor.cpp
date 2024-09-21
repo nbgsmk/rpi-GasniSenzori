@@ -49,14 +49,13 @@ using namespace std;
  * Constructor to create sensor and perform minimal initialization
  */
 GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle) {
-	this->H_STAT = NOT_DEFINED;
-//	this->initCompleted = false;
+	this->ERROR_CNT = 0;
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
 	this->uartHandle = uartHandle;
-	this->initCompleted = true;		// u teoriji ovo mora ici posle init() ali imam race condition. sredicemo drugi put
-	init(2000);
 
+	this->H_STAT = OK;	// za pocetak je OK, bilo koja greska ga kvari
+	init(2000);
 }
 
 GasSensor::~GasSensor() {
@@ -67,26 +66,26 @@ GasSensor::~GasSensor() {
  * Perform minimal initialization
  */
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
-	this->H_STAT = INIT_FAIL;
 	usleep(waitSensorStartup_mS * 1000);		// Malo vremena da se senzor stabilizuje nakon power-up
 
 	if(CONSOLE_DEBUG >=1){
 		cout << "init: mux adresa " << getMuxAddress() << endl;
 	}
 
-	// Najbezbolniji nacin da sto ranije otkrijem ako ne komuniciram sa senzorom
-	// Nije potreban nikakav rezultat. Ako ne komunicira, dobice se timeout
+	// Sto pre otkriti ako nema komunikacije sa senzorom
 	if(CONSOLE_DEBUG >=2){
-		cout << "init: early timeout / connection check" << endl;
+		cout << "init: sensor connection check (get running lights)" << endl;
 	}
-	send(cmdRunningLightGetStatus);
+	send(cmdRunningLightGetStatus);	// Nije bitan rezultat. Ako ne komunicira, dobice se timeout u send() metodu i postavice se H_STAT i ERROR_CNT
 
 	if(CONSOLE_DEBUG >=2){
 		cout << "init: get props" << endl;
 	}
 	getSensorProperties_D7();
 	if(CONSOLE_DEBUG >=1){
-		cout << "init: ja sam senzor " << getSensorTypeHex() << endl;
+		int th = getSensorTypeHex();
+		string cudno = (th==0) ? ", this is very likely an error!" : "";
+		cout << "init: senzor tip 0x" << th << cudno << endl;
 	}
 
 	if(CONSOLE_DEBUG >=2){
@@ -104,23 +103,32 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 
 	if(CONSOLE_DEBUG >=1){
 		if(H_STAT == OK) {
-			cout << "init: ok" << endl;
+			cout << "init ok: sensor muxAddress=" << this->muxAddress << ", type=" << getSensorTypeStr() << endl;
 		} else {
-			cout << "init errors! stat=" << H_STAT << endl;
+			// ako nema komunikacije sa senzorom, jedino sigurno je muxAddress
+			cout << "init fail: sensor muxAddress=" << this->muxAddress << ", H_STAT=" << H_STAT << ", error count=" << ERROR_CNT << endl;
 		}
+		cout << endl;
 	}
 
-	this->H_STAT = OK;
 }
 
 /**
- * Query parameters from sensor and populate struct
+ * Query parameters from sensor with _D7_ command, and populate struct sensorProperties.
+ * @return nothing.
+ * @struct sensorProperties will be populated for later use
  */
 void GasSensor::getSensorProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
+
+	int expected = cmdGetTypeRangeUnitDecimals0xd7.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return;
+	}
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
 	if (hdr) {
@@ -157,20 +165,20 @@ void GasSensor::getSensorProperties_D7() {
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;		// silently report
 		if(CONSOLE_DEBUG > 0){
-			cout << "Wrong response header during init. Strongly suggest exiting the program!";
+			cout << "sensor properties: wrong response header! STRONGLY suggest to discard any measurements.";
 		}
 	}
 }
 
 /**
- * Set active mode: sensor will send measurement data automatically in 1 second intervals
+ * @param active mode: sensor will send measurement data automatically at 1 second intervals
  */
 void GasSensor::setActiveMode() {
 	send(cmdSetActiveMode);
 }
 
 /**
- * Set passive mode: sensor will send measurement data only when requested
+ * @param passive mode = sensor will send measurement data only when requested
  */
 void GasSensor::setPassiveMode() {
 	send(cmdSetPassiveMode);
@@ -178,20 +186,23 @@ void GasSensor::setPassiveMode() {
 
 
 /**
- * Vraca adresu na uart multiplekseru gde je senzor povezan
+ * @return Vraca HARDVERSKU adresu na uart multiplekseru (gde je senzor fizicki povezan).
+ * @warning Adresa ce biti tacna SAMO u trenutku dok je OVAJ senzor aktivan. Razni procesi mogu pristupati mux-u i menjati ga nezavisno.
  */
 int GasSensor::getMuxAddress(){
 	return this->muxAddress;
 }
 
 /**
- * Tip senzora HEX vrednost. Vidi datasheet
+ * @return sensor type as HEX value
  */
 int GasSensor::getSensorTypeHex(){
 	return (int) sensorProperties.tip;
 }
 
-
+/**
+ * @return string describing sensor type, such as "H2S", "CO"...
+ */
 std::string GasSensor::getSensorTypeStr(){
 	std::string rez = "";
 	// Raw property je HEX a funkcija castuje na INT.
@@ -214,6 +225,13 @@ std::string GasSensor::getSensorTypeStr(){
 
 
 		default:
+			/* 
+			* ovo se desava ako je:
+			* - senzor stvarno prijavio neki tip koji ovde nije definisan
+			* - nastupila bilo kakva greska u komunikaciji sa senzorom
+			* - senzor nije nista odgovorio i properties.tip je prazan ili nula ili null valjda
+			*/
+			// ovo se desava i ako je nastupila greska ili
 			rez = "hmm...neki nepoznat senzor!?";
 			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
 			break;
@@ -236,6 +254,13 @@ int GasSensor::getMaxRange() {
 int GasSensor::getGasConcentrationPpm() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
+
+	int expected = cmdReadGasConcentration.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return MEASUREMENT_ERROR;
+	}
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
@@ -247,17 +272,25 @@ int GasSensor::getGasConcentrationPpm() {
 		rezultat = MEASUREMENT_ERROR;
 	}
 	if ( rezultat < 0 ) {
+		// ne vrecaj MEASUREMENT_ERROR jer je rezultat svejedno negativan
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
 	}
 	return (int) rezultat;
 }
 
 /**
- * @return current gas concentration in ppm
+ * @return gas concentration in mg/m3
  */
 int GasSensor::getGasConcentrationMgM3() {
 	uint16_t rezultat = 0;
 	std::vector<uint8_t> reply = send(cmdReadGasConcentration);
+
+	int expected = cmdReadGasConcentration.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return MEASUREMENT_ERROR;
+	}
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
@@ -269,17 +302,25 @@ int GasSensor::getGasConcentrationMgM3() {
 		rezultat = MEASUREMENT_ERROR;
 	};
 	if ( rezultat < 0 ) {
+		// nema potrebe da vracam MEASUREMENT_ERROR jer je i ovako negativno
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
 	}
 	return (int) rezultat;
 }
 
 /**
- * @return gas concentration normalized to 0~100% of max measurement range
+ * @return gas concentration normalized to 0 ~ 100% of max measurement range
  */
 int GasSensor::getGasPercentageOfMax() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
+
+	int expected = cmdReadGasConcentration.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return MEASUREMENT_ERROR;
+	}
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
@@ -291,17 +332,27 @@ int GasSensor::getGasPercentageOfMax() {
 		rezultat = MEASUREMENT_ERROR;
 	}
 	if ( (rezultat < 0) || (rezultat > 100) ) {
+		rezultat = MEASUREMENT_ERROR;
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
 	}
 	return (int) rezultat;
 }
 
+
+
 /**
  * @return temperature from combined reading (datasheet Command 6)
  */
-float GasSensor::getTemperature() {
+int GasSensor::getTemperature() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+	
+	int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return (float) MEASUREMENT_ERROR;
+	}
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
@@ -318,9 +369,16 @@ float GasSensor::getTemperature() {
 /**
  * @return relative humidity from combined reading (datasheet Command 6)
  */
-float GasSensor::getRelativeHumidity() {
+int GasSensor::getRelativeHumidity() {
 	uint16_t rezultat = 0;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+
+	int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return MEASUREMENT_ERROR;
+	}
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
@@ -345,45 +403,60 @@ void GasSensor::setLedOn() {
 }
 
 /**
- * Sensor activity led will be off
+ * @brief Sensor activity led will be off
  */
 void GasSensor::setLedOff() {
 	send(cmdRunningLightOff);
 }
 
 /**
- * Sensor activity led will be off
+ * @brief Get state of sensor activity led
+ * @return true = blinking, false = off
  */
 bool GasSensor::getLedStatus() {
 	bool rezultat = false;
 	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
+
+	int expected = cmdRunningLightGetStatus.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return false;
+	}
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x8A);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
 		rezultat = (reply.at(2) == 1) ? true : false;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
+		rezultat = false;
 	}
 	return rezultat;
 }
 
 
 /**
+ * @brief
+ * Send raw command to sensor and wait for zero or more bytes in reply.
+ * If any reply is expected, checksum will be (optionally) checked.
+ * In case of errors, H_STAT and ERROR_CNT will be set.
+ * 
+ * @warning
  * WARNING: Sensor measurement results are NOT CHECKED for consistency in this method!!
- * WARNING: The calling function MUST verify if the results returned from here make sense in the real world!
- * WARNING: This method only makes sure that any reply is received within timeout and that checksum is ok.
- *
- * functionality:
- * Send raw command to sensor and wait for a specific number of bytes in reply.
- * If any reply is expected, checksum will be checked (configurable true / false) and H_STAT will be set.
- * If a timeout occurs, H_STAT will be set.
+ * 
+ * WARNING: Caller MUST verify on their own if results returned from here make any sense in the real world.
+ * 
+ * WARNING: This method ensures only:
+ *   1) a reply is received within timeout 
+ *   2) the checksum is ok (optional)
+ * 
+ * 
+ * @return vector of raw bytes returned from sensor
+ * @note will increment a global ERROR_CNT if required
  */
 std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
-	this->H_STAT = OK;
-	if (initCompleted == false) {
-		this->H_STAT = INIT_FAIL;
-		throw std::invalid_argument("Must call init before sending commands! Exiting!");
-	}
+
+	this->H_STAT = OK;		// ako nesto ne bude ok, ovo ce se pokvariti
 
 	UartMux *mux = new UartMux();
 	mux->setAddr(this->muxAddress);
@@ -415,10 +488,11 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 		unsigned int timeOut_mS = 2000;		// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako za DVE SEKUNDE ne stigne nista, onda jbga!
 
 		/*
-		 * Na pocetku je serial buffer prazan
-		 * tj serialDataAvail je recimo nula pa se polako puni karakterima, kako pristizu od senzora
-		 * Zato cekam dok available ne postane jednako expected
-		 * ili dok ne istekne timeout (npr senzor je neispravan ili iskljucen)
+		 * Na pocetku je buffer prazan tj serialDataAvail() == 0
+		 * pa se polako puni karakterima, kako pristizu od senzora
+		 * Zato cekam da
+		 * - available postane jednako expected
+		 * - ili istekne timeout (senzor je neispravan ili fizicki iskljucen)
 		 */
 		while (serialDataAvail(this->uartHandle) < (int) txStruct.expectedReplyLen) {
 			usleep(1000);
@@ -437,7 +511,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 
 		if (mS < timeOut_mS) {
-			// ako su stigli bajtovi i nije nastupio timeout
+			// ovde smo ako nije nastupio timeout i stiglo je dovoljno bajtova
 			while ( serialDataAvail(this->uartHandle) > 0 ) {
 				uint8_t x = serialGetchar(this->uartHandle);
 				reply.push_back(x);
@@ -445,13 +519,13 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 			// stigao je odgovor, kakav-takav
 
 			// podesimo error statuse
-			int sajzOk = (reply.size() == txStruct.expectedReplyLen);		// ne diraj duplo jednako!
-			if ( ! sajzOk) { this->H_STAT = MEASUREMENT_INCOMPLETE; };		// stiao je pogresan broj bajtova
+			bool sajzOk = (reply.size() == txStruct.expectedReplyLen);		// ne diraj duplo jednako!
+			if ( ! sajzOk ) { this->H_STAT = MEASUREMENT_INCOMPLETE; };		// stiao je pogresan broj bajtova
 
 
 			// pa sad slicno ali za console debugging
 			if (CONSOLE_DEBUG >= 2) {
-				cout << "after sleeping " << mS << "mS" << endl;
+				cout << "reply received after " << mS << "mS" << endl;
 				cout << "rcv: ";
 				if (reply.size() == 0) {
 					cout << CON_RED << "NONE!";		// nije stiglo nista! prazan vector zasluzuje crvena slova!
@@ -468,7 +542,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 			// neke komande vracaju odgovor i checksum, a neke samo odgovor bez checksuma, a neke nista
 			if (txStruct.checksumPresent == true) {
 				bool chk = isChecksumValid(reply);
-				if ((this->checksumValidatorIsActive == true) & (chk == false)) {
+				if ((this->checksumValidatorIsActive == true) && (chk == false)) {
 					this->H_STAT = MEASUREMENT_CHECKSUM_FAIL;
 					if(CONSOLE_DEBUG > 0) {
 						cout << "reply checksum is " << CON_RED << "NOT OK!" << CON_RESET << endl;
@@ -480,39 +554,64 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 	}
 
+	if (H_STAT != OK){
+		ERROR_CNT++;
+	}
+
 	serialFlush(this->uartHandle);
 	return reply;
 }
 
+
+/**
+ * @brief Checksum validation will be performed or skipped
+ */
 void GasSensor::setChecksumValidatorState(bool state) {
 	this->checksumValidatorIsActive = state;
 }
+
+/**
+ * @brief Get current state of checksum validation
+ * @return true = checksum is validated, false = checksum is discarded
+ */
 bool GasSensor::getChecksumValidatorState(){
 	return this->checksumValidatorIsActive;
 }
 
+/**
+ * @brief Get sensor precision
+ * @return number of decimal places as reported by sensor
+ */
 int GasSensor::getDecimals() {
 	return sensorProperties.decimals;
 }
 
+/**
+ * @brief Calculate checksum and compare with expected
+ * @return true = sensor data is valid against reported checksum
+ */
 bool GasSensor::isChecksumValid(std::vector<uint8_t> repl) {
+	/*
+	* NOTA:
+	* Datasheet kaze da se checksum racuna:
+	* - zbir bajtova od JEDINICE zakljucno sa PRETPOSLEDNJIM
+	* - ne sabiraju se nulti i poslednji bajt. Poslednji je checksum
+	* - od zbira se uradi bitwise not
+	* - doda se jedan
+	*/
 	uint8_t sum = 0;
-	for (unsigned int i = 1; i < (repl.size() - 1); ++i) {
-		// NOTA:
-		// -- Datasheet kaze: checksum se racuna od JEDINICE zakljucno sa PRETPOSLEDNJIM bajtom
-		// -- Ne sabira se nulti i poslednji. Poslednji je checksum.
+	const int JEDAN = 1;	// nemoj u brzini da ovo ispravis na nulu!!
+	for (unsigned int i = JEDAN; i < (repl.size()-JEDAN); ++i) {
 		sum += repl.at(i);
 	}
 	sum = ~sum;	// bitwise not
 	sum = sum + 1;
 	if (sum == repl.at(repl.size() - 1)) {
-		this->H_STAT = MEASUREMENT_CHECKSUM_OK;
 		return true;
 	} else {
 		this->H_STAT = MEASUREMENT_CHECKSUM_FAIL;
 		return false;
 	};
-
 }
 
 //////////////////

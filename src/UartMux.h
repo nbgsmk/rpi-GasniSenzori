@@ -31,13 +31,13 @@
 #define adr_H2S			5
 #define adr_O2			6
 #define adr_itd			7
-#define adr_DONOTUSE_1	1	// pocetno, izgleda da su svi pinovi floating low, tj adresa 0x000 iliti, po njegovoj numeraciji port 1
+#define adr_PWRON		1	// Posle ukljucenja izgleda da su svi pinovi multipleksera low, tj hardverski je 0b000, a na plocici tu pise P1. Ostavljam taj port za kontrolu kamere.
 
 
 // rpi specific
 /*
  * NAZIVI GPIO PINOVA
- * proveriti na rpi: $ gpio readall
+ * provera na rpi: $ gpio readall
  *
  +-----+-----+---------+------+---+---Pi 3---+---+------+---------+-----+-----+
  | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
@@ -66,7 +66,7 @@
  | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
  +-----+-----+---------+------+---+---Pi 3---+---+------+---------+-----+-----+
  *
- * wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
+ * wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers (kolona BCM)
  * wiringPiSetup();		// Initializes wiringPi using wiringPi's simlified number system.
  */
 // map uartmux pin S1,2,3->	BCM pin
@@ -81,11 +81,11 @@ public:
 	UartMux();
 	virtual ~UartMux();
 
-	void setAddr(MuxAdr_t adresa);		// prozovi uart mux adresu
-	MuxAdr_t getAddr();					// koja je trenutna adresa?
+	void setAddr(MuxAdr_t portNum_1to8);	// prozovi uart mux adresu
+	MuxAdr_t getAddr();						// koja je trenutna adresa?
 
 private:
-	MuxAdr_t currentAddress;
+	MuxAdr_t hwAddr;
 };
 
 #endif /* SRC_UARTMUX_H_ */

@@ -80,12 +80,23 @@ int main() {
 	pinMode(UartMuX_pinS2, OUTPUT);
 	pinMode(UartMuX_pinS3, OUTPUT);
 
+	// if (1==1){
+	// 	cout << "samo ovo" << endl;
+	// 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+	// 	exit(1);
+	// }
+	
+
 	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
 	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
-//	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
-	GasSensor *o2 = new GasSensor(adr_CO, uartFileDescriptor);
+	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+	// GasSensor *o2 = new GasSensor(adr_CO, uartFileDescriptor);
+	
 
-	// To je to. Inicijalizacija i osnovni error kodovi
+
+	//////////////////////////
+	// Grupe raznih testova //
+	//////////////////////////
 
 	while (1) {
 
@@ -94,22 +105,25 @@ int main() {
 		b->trep(1000, 1000);
 
 		/**
-		 * blok 1 = talk to sensors normal
-		 * blok 2 = nekakav debug uart test
-		 * blok 3 = sensor response time (ispada da je oko 30-4mS)
+		 * blok 1 = talk to sensors normally
+		 * blok 2 = send raw bytes to sensor 
+		 * blok 3 = sensor response time (ispada da je oko 30-40mS)
 		 * blok 4 = UartMux test
 		 * blok 5 = svaki senzor bi morao da zna svoju adresu
 		 * blok 6 = prozivka u krug
 		 */
 
-		int blok = 1;
+		int blok = 4;
+		cout << endl;
+		cout << "-----------" << endl;
 		cout << "test blok " << blok << endl;
+		cout << "-----------" << endl;
 
 		switch (blok) {
 
-			////////////////////
-			// TALK TO SENSOR(s)
-			////////////////////
+			//////////////////////////////
+			// TALK TO SENSORS NORMALLY //
+			//////////////////////////////
 			case 1: {
 				b->trepCnt(blok, 5, 250);
 				for (;;) {
@@ -282,15 +296,15 @@ int main() {
 				break;
 			}
 
-			/////////////////////
-			// TALK TO DEBUG UART
-			/////////////////////
+			//////////////////////////
+			// SEND RAW DATA TO SENSOR
+			//////////////////////////
 			case 2: {
 				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
 					const char s[] = { 'l', 'e', 'v', 'o', ' ', 'd', 'e', 's', 'n', 'o', '\n' };
-//					char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
+					// char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
 					co->sendRawBytes(s, sizeof(s));
 					usleep(1000 * 1000);
