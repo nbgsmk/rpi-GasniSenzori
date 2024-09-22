@@ -81,7 +81,7 @@ public:
 	UartMux();
 	virtual ~UartMux();
 
-	void setAddr(MuxAdr_t portNum_1to8);	// prozovi uart mux adresu
+	bool setAddr(MuxAdr_t portNum_1to8);	// prozovi uart mux adresu
 	MuxAdr_t getAddr();						// koja je trenutna adresa?
 
 private:

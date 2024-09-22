@@ -90,7 +90,6 @@ int main() {
 	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
 	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
-	// GasSensor *o2 = new GasSensor(adr_CO, uartFileDescriptor);
 	
 
 
@@ -300,6 +299,8 @@ int main() {
 			// SEND RAW DATA TO SENSOR
 			//////////////////////////
 			case 2: {
+				cout << "send raw bytes to sensor" << endl;
+				cout << "------------------------" << endl;
 				for (;;) {
 					b->trepCnt(blok, 5, 250);
 
@@ -316,6 +317,8 @@ int main() {
 			// SENSOR RESPONSE TIME
 			///////////////////////
 			case 3: {
+				cout << "sensor response time" << endl;
+				cout << "--------------------" << endl;
 				for (;;) {
 					b->trepCnt(blok, 5, 100);
 
@@ -347,26 +350,25 @@ int main() {
 					cout << "------------" << endl;
 					b->trepCnt(blok, 5, 250);
 
-					mux->setAddr(2);		// raw num
-					cout << "mux addr " << mux->getAddr() << endl;
-					usleep(1000 * 2000);
+					vector<int> v;
+					v.push_back(3);			// raw number je ok
+					v.push_back(adr_CO);	// logicke adrese su ok
+					v.push_back(adr_H2S);
+					v.push_back(adr_itd);
+					v.push_back(17);		// izvan opsega -> nema promene
+					v.push_back(0);			// izvan opsega -> nema promene
+					v.push_back(-66);		// izvan opsega -> nema promene
 
-					mux->setAddr(adr_CO);	// logical address
-					cout << "mux addr " << mux->getAddr() << endl;
-					usleep(1000 * 2000);
+					for (int i = 0; i < v.size(); i++) {
+						mux->setAddr(v.at(i));
+						cout << "mux addr: set "<<v.at(i)<<", get " << mux->getAddr() << endl;
+						usleep(1000 * 2000);						
+					}
 
-					mux->setAddr(adr_H2S);
-					cout << "mux addr " << mux->getAddr() << endl;
-					usleep(1000 * 2000);
-
-					mux->setAddr(adr_itd);
-					cout << "mux addr " << mux->getAddr() << endl;
-					usleep(1000 * 2000);
-
-					for (int aa = 8; aa > 0; --aa) {
-						mux->setAddr(aa);
-						cout << "mux addr " << mux->getAddr() << endl;
-						usleep(1000 * 100);
+					for (int i = 12; i > -4; i--) {
+						mux->setAddr(i);
+						cout << "mux addr: set "<<i<<", get " << mux->getAddr() << endl;
+						usleep(1000 * 100);						
 					}
 					cout << endl;
 				}
@@ -411,6 +413,8 @@ int main() {
 			// Prozivka u krug, u krug
 			//////////////////////////
 			case 6: {
+				cout << "Prozivka!" << endl;
+				cout << "---------" << endl;
 				for ( ; ; ) {
 					cout << endl;
 					GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
