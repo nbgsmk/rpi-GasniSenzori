@@ -29,6 +29,7 @@ public:
 		MEASUREMENT_CHECKSUM_FAIL,
 		MEASUREMENT_OUT_OF_RANGE,
 	};
+	ErrCodes_t getErrorCode();
 
 	void setActiveMode();
 	void setPassiveMode();
