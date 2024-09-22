@@ -40,21 +40,21 @@ int main() {
 	if (  (uartFileDescriptor=serialOpen(hwUart_ttyS0, 9600)) >= 0  ) {
 		// /dev/tty0 i /dev/serial0 su jedno te isto na Rpi
 		H_STATUS = ErrCodes_t::OK;
-		if (CONSOLE_DEBUG > 0) {
+		if (DEBUG_LEVEL > 0) {
 			cout << "uart=" << hwUart_ttyS0 << " ok" << endl;
 		}
 
 	} else if ( (uartFileDescriptor=serialOpen(hwUart_serial0, 9600)) >= 0 ) {
 		// /dev/tty0 i /dev/serial0 su jedno te isto na Rpi
 		H_STATUS = ErrCodes_t::OK;
-		if (CONSOLE_DEBUG > 0) {
+		if (DEBUG_LEVEL > 0) {
 			cout << "uart=" << hwUart_serial0 << " ok" << endl;
 		}
 
 	} else {
 		// nisam mogao da otvorim serijski port
 		H_STATUS = ErrCodes_t::UART_NOT_AVAILABLE;
-		if (CONSOLE_DEBUG > 0) {
+		if (DEBUG_LEVEL > 0) {
 			cerr << "Could not open " << hwUart_ttyS0 << " or " << hwUart_serial0 << ". We should be running _only_ on rpi zero w, rpi 3 or rpi 4." << endl;
 			cerr << "Did you forget to run raspi-config to enable serial peripheral?" << endl;
 		}
@@ -66,7 +66,7 @@ int main() {
 	int we = wiringPiSetupGpio(); // Initializes wiringPi using the Broadcom GPIO pin numbers
 	if (we == -1) {
 		H_STATUS = ErrCodes_t::WiringPi_NOT_AVAILABLE;
-		if (CONSOLE_DEBUG > 0) {
+		if (DEBUG_LEVEL > 0) {
 			cerr << "Unable to start wiringPi! Error " << errno << endl;
 			cerr << "Unable to start wiringPi: %s\n" << endl;
 		}
@@ -87,9 +87,16 @@ int main() {
 	// }
 	
 
-	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);
-	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor);
-	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
+	cout << "kreiram senzore, testiram opcioni parametar DEBUG_LEVEL" << endl;
+	cout << "app: ako je nula, nece se videti, zato javljam odavde: debug level = 0" << endl;
+	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);			// default debug_level = 0
+	cout << "app: ako nista nije napisao izmedju prethodnog \"app:\" i ovde, dobro je" << endl;
+	cout << endl;
+	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor, 1);
+	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 2);
+	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 2);
+	cout << "ok!" << endl;
+	cout << endl;
 	
 
 
@@ -112,7 +119,7 @@ int main() {
 		 * blok 6 = prozivka u krug
 		 */
 
-		int blok = 4;
+		int blok = 1;
 		cout << endl;
 		cout << "-----------" << endl;
 		cout << "test blok " << blok << endl;
@@ -146,17 +153,16 @@ int main() {
 						usleep(1000 * 2500);
 					}
 
-					cout << "---- sensor tip ----" << endl;
 					int ht = co->getSensorTypeHex();
-					cout << "hex=" << std::hex << ht << std::dec << endl;
+					cout << "sensor tip hex " << std::hex << ht << std::dec << endl;
 
 					std::string st = co->getSensorTypeStr();
-					cout << "str=" << st << endl;
+					cout << "sensor tip str " << st << endl;
 
 
 					b->trep(5, 50);
 					b->trep(5, 50);
-					cout << "---- measure ----" << endl;
+					cout << "---- measurements ----" << endl;
 
 					int dec = co->getDecimals();
 					cout << "br decimala " << dec << endl;
@@ -201,17 +207,16 @@ int main() {
 						usleep(1000 * 2000);
 					}
 
-					cout << "---- sensor tip ----" << endl;
 					ht = h2s->getSensorTypeHex();
-					cout << "hex=" << std::hex << ht << std::dec << endl;
+					cout << "sensor tip hex " << std::hex << ht << std::dec << endl;
 
 					st = h2s->getSensorTypeStr();
-					cout << "str=" << st << endl;
+					cout << "sensor tip str " << st << endl;
 
 
 					b->trep(5, 50);
 					b->trep(5, 50);
-					cout << "---- measure ----" << endl;
+					cout << "---- measurements ----" << endl;
 
 					dec = h2s->getDecimals();
 					cout << "br decimala " << dec << endl;
@@ -257,17 +262,16 @@ int main() {
 						usleep(1000 * 2000);
 					}
 
-					cout << "---- sensor tip ----" << endl;
 					ht = o2->getSensorTypeHex();
-					cout << "hex=" << std::hex << ht << std::dec << endl;
+					cout << "sensor tip hex " << std::hex << ht << std::dec << endl;
 
 					st = o2->getSensorTypeStr();
-					cout << "str=" << st << endl;
+					cout << "sensor tip str " << st << endl;
 
 
 					b->trep(5, 50);
 					b->trep(5, 50);
-					cout << "---- measure ----" << endl;
+					cout << "---- measurements ----" << endl;
 
 					dec = o2->getDecimals();
 					cout << "br decimala " << dec << endl;
@@ -290,6 +294,47 @@ int main() {
 					cout << "----  done  ----\n" << endl;
 					cout << endl;
 					usleep(5000 * 1000);
+
+
+					//////////////////////////////////////
+					//////////////////////////////////////
+					// nepostojeci, pokvaren, iskljucen //
+					//////////////////////////////////////
+					//////////////////////////////////////
+					cout << "----- talk to nepostojeci -----" << endl;
+					cout << "mux will be " << 8 << endl;
+
+					cout << "--------" << endl;
+					cout << "set debug level 0 = silent, ne sme prijaviti NISTA sto ga nisam pitao" << endl;
+					nepostojeci->setDebugLevel(0);
+					nepostojeci->getDebugLevel();
+					nepostojeci->getLedStatus();
+					nepostojeci->getSensorTypeStr();
+					nepostojeci->getGasConcentrationPpm();
+					cout << "hajde reci error code " << nepostojeci->getErrorCode() << endl;
+					cout << "hajde reci error count " << nepostojeci->getErrorCount() << endl;
+
+					cout << "--------" << endl;
+					cout << "set debug level 1 = minimal. Osim rezultata, moze biti i nekih gresaka na konzoli" << endl;
+					nepostojeci->setDebugLevel(1);
+					cout << "debug level je " << nepostojeci->getDebugLevel() << endl;
+					cout << "get led status " << nepostojeci->getLedStatus() << endl;
+					cout << "get sensor typ str " << nepostojeci->getSensorTypeStr() << endl;
+					cout << "get gas ppm " << nepostojeci->getGasConcentrationPpm() << endl;
+					cout << "error code " << nepostojeci->getErrorCode() << endl;
+					cout << "error count " << nepostojeci->getErrorCount() << endl;
+
+
+
+					cout << "--------" << endl;
+					cout << "set debug level 2 = quite verbose" << endl;
+					nepostojeci->setDebugLevel(2);
+					cout << "debug level is" << nepostojeci->getDebugLevel() << endl;
+					cout << "get led status " << nepostojeci->getLedStatus() << endl;
+					cout << "get sensor typ str " << nepostojeci->getSensorTypeStr() << endl;
+					cout << "get gas ppm " << nepostojeci->getGasConcentrationPpm() << endl;
+					cout << "error code " << nepostojeci->getErrorCode() << endl;
+					cout << "error count " << nepostojeci->getErrorCount() << endl;
 
 				}
 				break;

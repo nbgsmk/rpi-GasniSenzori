@@ -15,7 +15,7 @@
 
 class GasSensor {
 public:
-	GasSensor(MuxAdr_t muxAddress, int uartHandle);
+	GasSensor(MuxAdr_t muxAddress, int uartHandle, unsigned int default_level = 0);
 	virtual ~GasSensor();
 
 	enum ErrCodes_t {
@@ -30,6 +30,9 @@ public:
 		MEASUREMENT_OUT_OF_RANGE,
 	};
 	ErrCodes_t getErrorCode();
+	unsigned int getErrorCount();
+	void setDebugLevel(unsigned int level);
+	unsigned int getDebugLevel();
 
 	void setActiveMode();
 	void setPassiveMode();
@@ -59,8 +62,8 @@ public:
 
 private:
 	// Error handling je neophodan
-	int CONSOLE_DEBUG = 1;
-	int ERROR_CNT = 0;
+	unsigned int DEBUG_LEVEL =0;
+	unsigned int ERROR_CNT = 0;
 	ErrCodes_t H_STAT = NOT_DEFINED;
 
 	int muxAddress;
@@ -80,7 +83,6 @@ private:
 
 	void getSensorProperties_D7();							// popuni struct sa podacima o senzoru
 	bool isChecksumValid(std::vector<uint8_t> repl);
-
 
 };
 

@@ -9,7 +9,7 @@
 #define APP_H_
 
 // Error handling je neophodan
-int CONSOLE_DEBUG = 2; 	// 0=silent operation; sve ostalo -> print na stdout, stderr...
+int DEBUG_LEVEL = 2; 	// 0=silent operation; sve ostalo -> print na stdout, stderr...
 enum ErrCodes_t {
 	OK = 0,
 	NOT_DEFINED,

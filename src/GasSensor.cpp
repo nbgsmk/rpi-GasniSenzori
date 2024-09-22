@@ -46,9 +46,10 @@
 using namespace std;
 
 /**
- * Constructor to create sensor and perform minimal initialization
+ * Create sensor instance, perform initialization
  */
-GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle) {
+GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle, unsigned int default_lev) {
+	this->DEBUG_LEVEL = default_lev;
 	this->ERROR_CNT = 0;
 	this->muxAddress = muxAddress;
 	this->runningLed = true;
@@ -63,37 +64,39 @@ GasSensor::~GasSensor() {
 }
 
 /**
- * Perform minimal initialization
+ * @brief Perform minimal initialization, report if comm error
+ * @note Na izlasku iz ovoga, ako H_STAT i ERROR_CNT nisu nula onda nesto debelo ne valja
  */
 void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	usleep(waitSensorStartup_mS * 1000);		// Malo vremena da se senzor stabilizuje nakon power-up
 
-	if(CONSOLE_DEBUG >=1){
+	if(DEBUG_LEVEL >=1){
 		cout << "init: mux adresa " << getMuxAddress() << endl;
+		cout << "init: debug_level = " << DEBUG_LEVEL << endl;
 	}
 
 	// Sto pre otkriti ako nema komunikacije sa senzorom
-	if(CONSOLE_DEBUG >=2){
+	if(DEBUG_LEVEL >=2){
 		cout << "init: sensor connection check (get running lights)" << endl;
 	}
 	send(cmdRunningLightGetStatus);	// Nije bitan rezultat. Ako ne komunicira, dobice se timeout u send() metodu i postavice se H_STAT i ERROR_CNT
 
-	if(CONSOLE_DEBUG >=2){
+	if(DEBUG_LEVEL >=2){
 		cout << "init: get props" << endl;
 	}
 	getSensorProperties_D7();
-	if(CONSOLE_DEBUG >=1){
+	if(DEBUG_LEVEL >=1){
 		int th = getSensorTypeHex();
 		string cudno = (th==0) ? ", this is very likely an error!" : "";
 		cout << "init: senzor tip 0x" << th << cudno << endl;
 	}
 
-	if(CONSOLE_DEBUG >=2){
+	if(DEBUG_LEVEL >=2){
 		cout << "init: set passive" << endl;
 	}
 	send(cmdSetPassiveMode);
 
-	if(CONSOLE_DEBUG >=2){
+	if(DEBUG_LEVEL >=2){
 		cout << "init: set running light ON" << endl;
 	}
 	send(cmdRunningLightOn);
@@ -101,7 +104,7 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 //	send(cmdSetActiveMode);
 //	send(cmdRunningLightOn);
 
-	if(CONSOLE_DEBUG >=1){
+	if(DEBUG_LEVEL >=1){
 		if(H_STAT == OK) {
 			cout << "init ok: sensor muxAddress=" << this->muxAddress << ", type=" << getSensorTypeStr() << endl;
 		} else {
@@ -164,7 +167,7 @@ void GasSensor::getSensorProperties_D7() {
 
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;		// silently report
-		if(CONSOLE_DEBUG > 0){
+		if(DEBUG_LEVEL > 0){
 			cout << "sensor properties: wrong response header! STRONGLY suggest to discard any measurements.";
 		}
 	}
@@ -232,7 +235,7 @@ std::string GasSensor::getSensorTypeStr(){
 			* - senzor nije nista odgovorio i properties.tip je prazan ili nula ili null valjda
 			*/
 			// ovo se desava i ako je nastupila greska ili
-			rez = "hmm...neki nepoznat senzor!?";
+			rez = "hmm...nepoznat senzor!?";
 			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
 			break;
 	};
@@ -411,7 +414,7 @@ void GasSensor::setLedOff() {
 
 /**
  * @brief Get state of sensor activity led
- * @return true = blinking, false = off
+ * @return blinking=true, off=false
  */
 bool GasSensor::getLedStatus() {
 	bool rezultat = false;
@@ -465,9 +468,9 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	reply.clear();
 	serialFlush(this->uartHandle);
 
-	if(CONSOLE_DEBUG >= 2) {
+	if(DEBUG_LEVEL >= 2) {
 		cout << "send sajz " << txStruct.cmd.size() << ", will expect " << txStruct.expectedReplyLen << endl;
-		if(CONSOLE_DEBUG >= 3) {
+		if(DEBUG_LEVEL >= 3) {
 			cout << "cmd to send:";
 			for (unsigned int i = 0; i < txStruct.cmd.size(); ++i) {
 				cout << " " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << std::dec;
@@ -501,7 +504,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 				// isteklo vreme!
 				// Samo break iz petlje, neka metod nastavi dalje, ako je potreban neki cleanup
 				this->H_STAT = SENSOR_TIMEOUT;
-				if(CONSOLE_DEBUG >=1){
+				if(DEBUG_LEVEL >=1){
 					cout << "ERROR!! Timeout in sensor comunication after " << mS << "mS" << endl;
 				}
 				break;
@@ -524,7 +527,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 
 			// pa sad slicno ali za console debugging
-			if (CONSOLE_DEBUG >= 2) {
+			if (DEBUG_LEVEL >= 2) {
 				cout << "reply received after " << mS << "mS" << endl;
 				cout << "rcv: ";
 				if (reply.size() == 0) {
@@ -544,7 +547,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 				bool chk = isChecksumValid(reply);
 				if ((this->checksumValidatorIsActive == true) && (chk == false)) {
 					this->H_STAT = MEASUREMENT_CHECKSUM_FAIL;
-					if(CONSOLE_DEBUG > 0) {
+					if(DEBUG_LEVEL > 0) {
 						cout << "reply checksum is " << CON_RED << "NOT OK!" << CON_RESET << endl;
 					}
 				}
@@ -564,11 +567,12 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 
 
-//////////////////
-//////////////////
-//// UPRAVLJANJE
-//////////////////
-//////////////////
+//////////////////////////
+//////////////////////////
+//// 	UPRAVLJANJE 	//
+//////////////////////////
+//////////////////////////
+
 
 /**
  * @return najskoriji error kod
@@ -576,6 +580,30 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 GasSensor::ErrCodes_t GasSensor::getErrorCode(){
 	return H_STAT;
 }
+
+/**
+ * @return how many errors ocurred since last power on
+ * @note can be reset only by power-cycling the device, or creating a new instance of the class
+ */
+unsigned int GasSensor::getErrorCount(){
+	return this->ERROR_CNT;
+}
+
+
+/**
+ * @brief set debug verbosity from now on
+ */
+void GasSensor::setDebugLevel(unsigned int level){
+	this->DEBUG_LEVEL = level;
+}
+
+/**
+ * @brief get current debug verbosity
+ */
+unsigned int GasSensor::getDebugLevel(){
+	return this->DEBUG_LEVEL;
+}
+
 
 
 /**
