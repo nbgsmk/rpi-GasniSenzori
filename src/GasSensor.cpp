@@ -563,6 +563,21 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 }
 
 
+
+//////////////////
+//////////////////
+//// UPRAVLJANJE
+//////////////////
+//////////////////
+
+/**
+ * @return najskoriji error kod
+ */
+GasSensor::ErrCodes_t GasSensor::getErrorCode(){
+	return H_STAT;
+}
+
+
 /**
  * @brief Checksum validation will be performed or skipped
  */
