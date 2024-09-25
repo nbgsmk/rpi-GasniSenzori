@@ -27,6 +27,11 @@ dpkg-deb -x libstdc++6_4.7.2-5%2brpi1_armhf.deb /
 dpkg -i --force-all libstdc++6_4.7.2-5%2brpi1_armhf.deb
 
 
+64-bit ARM, the toolchain prefix is aarch64 and usage is:
+
+sudo apt install gcc-9-aarch64-linux-gnu
+aarch64-linux-gnu-gcc -o main.out main.c
+
 
 sudo apt-get install gcc-9-arm-linux-gnueabihf
 sudo apt-get install g++-9-arm-linux-gnueabihf
@@ -91,5 +96,82 @@ g++ main.o -o myapp ... \
    -Wl,--dynamic-linker=/path/to/newglibc/ld-linux.so.2
 
 
+
+sudo update-alternatives --install /opt/bin/arm-linux-gnueabihf-gcc \
+                                            arm-linux-gnueabihf-gcc \
+                                            /usr/bin/arm-linux-gnueabihf-gcc-9 \
+                                            109 \
+                            --slave /usr/bin/arm-linux-gnueabihf-g++ \
+                                            arm-linux-gnueabihf-g++ \
+                                            /usr/bin/arm-linux-gnueabihf-g++-9 \
+                            --slave /usr/bin/arm-linux-gnueabihf-gcov \
+                                            arm-linux-gnueabihf-gcov \
+                                            /usr/bin/arm-linux-gnueabihf-gcov-9
+
+
+
+eclipse debug config
+--------------------
+pre-debug command:
+cd remote_debug; rsync peca@ec2.local:Dev_cpp/ws_rpi/rpi-GasniSenzori/src/*.* . ; g++ *.cpp -lwiringPi
+
+github ttapa
+------------
+
+https://github.com/tttapa/RPi-Cross-Cpp-Development
+https://github.com/tttapa/docker-arm-cross-toolchain
+
+
+github AbhiTronics
+------------------
+
+https://github.com/abhiTronix/raspberry-pi-cross-compilers/wiki/Cross-Compiler:-Installation-Instructions
+
+## 32-bitni cross za rpi 01 i 3 i jace
+tar xf cross-gcc-10.3.0-pi_0-1.tar.gz
+tar xf cross-gcc-10.3.0-pi_3+.tar.gz
+
+mv cross-pi-gcc-10.3.0-0 /usr/cross-pi-gcc-10.3.0-0__pi01
+mv cross-pi-gcc-10.3.0-2 /usr/cross-pi-gcc-10.3.0-2_pi34
+
+cd
+echo 'export PATH=/usr/cross-pi-gcc-10.3.0-0_pi01/bin:$PATH' >> .bashrc
+echo 'export LD_LIBRARY_PATH=/usr/cross-pi-gcc-10.3.0-0_pi01/lib:$LD_LIBRARY_PATH' >> .bashrc
+
+echo 'export PATH=/usr/cross-pi-gcc-10.3.0-2_pi34/bin:$PATH' >> .bashrc
+echo 'export LD_LIBRARY_PATH=/usr/cross-pi-gcc-10.3.0-2_pi34/lib:$LD_LIBRARY_PATH' >> .bashrc
+
+source .bashrc
+
+
+sysroot
+-------
+sudo apt install sshfs
+mkdir ~/remote_mount
+sshfs username@remote_server:/path/to/remote_directory ~/remote_mount
+sshfs peca@r5.local:/usr/ r5/usr/
+sshfs peca@r5.local:/lib/ r5/lib
+
+more /etc/mtab | grep r5
+
+fusermount -u ~/remote_mount
+
+aarch64-linux-gnu-g++ --sysroot=$SYSROOT -I$SYSROOT/usr -L$SYSROOT/usr/lib/ -lwiringPi Linking.cpp -v
+
+
+Hey hey!
+uart=/dev/ttyS0 ok
+
+co-100 
+D1:   0x19     0x00     0x64     0x02     0x00     0x00     0x00     0x20     0x7a  
+D1: 00011001 00000000 01100100 00000010 00000000 00000000 00000000 00100000 01111010
+D7:   0xff     0xd7     0x19     0x00     0x64     0x02     0x20     0x00     0x8a  
+D7: 11111111 11010111 00011001 00000000 01100100 00000010 00100000 00000000 10001010
+
+h2s-100 
+D1:   0x1c     0x00     0x64     0x02     0x00     0x00     0x00     0x20     0x7a  
+D1: 00011100 00000000 01100100 00000010 00000000 00000000 00000000 00100000 01111010
+D7:   0xff     0xd7     0x1c     0x00     0x64     0x02     0x20     0x00     0x87  
+D7: 11111111 11010111 00011100 00000000 01100100 00000010 00100000 00000000 10000111
 
 

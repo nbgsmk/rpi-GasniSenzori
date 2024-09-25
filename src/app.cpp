@@ -30,6 +30,11 @@ using namespace std;
 
 int main() {
 	cout << "Hey hey!" << endl;
+	cout << "Tek da se zna, ovde imamo:" << endl;
+	cout << "  TB600c CO - 100ppm" << endl;
+	cout << "  TB600c H2S - 100ppm" << endl;
+	cout << "  TB200b O2 - 25%" << endl;
+	cout << endl;
 
 	//---------------------------------------
 	// Inicijalizacija i osnovni error kodovi
@@ -80,25 +85,23 @@ int main() {
 	pinMode(UartMuX_pinS2, OUTPUT);
 	pinMode(UartMuX_pinS3, OUTPUT);
 
-	// if (1==1){
-	// 	cout << "samo ovo" << endl;
-	// 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor);
-	// 	exit(1);
-	// }
-	
+	Blinkovi *b = new Blinkovi();
 
 	cout << "kreiram senzore, testiram opcioni parametar DEBUG_LEVEL" << endl;
-	cout << "app: ako je nula, nece se videti, zato javljam odavde: debug level = 0" << endl;
-	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor);			// default debug_level = 0
-	cout << "app: ako nista nije napisao izmedju prethodnog \"app:\" i ovde, dobro je" << endl;
+	cout << "app: ako je DEBUG_LEVEL=0, nece biti nikakvog prikaza" << endl;
 	cout << endl;
+	cout << "co-100 " << endl;
+	GasSensor *co = new GasSensor(adr_CO, uartFileDescriptor, 0);			// default debug_level = 0
+	cout << "app: ako nista nije napisao izmedju naziva senzora (npr. \'co\') i ovog reda, dobro je!" << endl;
+	cout << endl;
+	cout << "h2s-100 " << endl;
 	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor, 1);
-	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 2);
-	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 2);
-	cout << "ok!" << endl;
+	cout << "o2-25 " << endl;
+	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 1);
+	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 0);
+	cout << "app: ok!" << endl;
 	cout << endl;
 	
-
 
 	//////////////////////////
 	// Grupe raznih testova //
@@ -106,7 +109,6 @@ int main() {
 
 	while (1) {
 
-		Blinkovi *b = new Blinkovi();
 		b->trep(1000, 1000);
 		b->trep(1000, 1000);
 

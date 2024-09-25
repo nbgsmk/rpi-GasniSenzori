@@ -15,7 +15,7 @@
 
 class GasSensor {
 public:
-	GasSensor(MuxAdr_t muxAddress, int uartHandle, unsigned int default_level = 0);
+	GasSensor(MuxAdr_t muxAddress, int uartHandle, int default_level = 0);
 	virtual ~GasSensor();
 
 	enum ErrCodes_t {
@@ -31,8 +31,8 @@ public:
 	};
 	ErrCodes_t getErrorCode();
 	unsigned int getErrorCount();
-	void setDebugLevel(unsigned int level);
-	unsigned int getDebugLevel();
+	void setDebugLevel(int level);
+	int getDebugLevel();
 
 	void setActiveMode();
 	void setPassiveMode();
@@ -62,14 +62,17 @@ public:
 
 private:
 	// Error handling je neophodan
-	unsigned int DEBUG_LEVEL =0;
+	int DEBUG_LEVEL =0;
 	unsigned int ERROR_CNT = 0;
 	ErrCodes_t H_STAT = NOT_DEFINED;
 
-	int muxAddress;
+	MuxAdr_t muxAddress;
 	bool runningLed;
 	int uartHandle;
 	bool checksumValidatorIsActive = true;
+
+	const unsigned int SENSOR_INIT_mS = 1000;		// minimalno vreme da se stabilizuje nakon power-on. Makar da LED pocne da trepce :-)
+	const unsigned int SENSOR_TIMEOUT_mS = 1000;	// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako ne odgovori za celu sekundu, nesto debelo ne valja!
 
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 
@@ -81,7 +84,8 @@ private:
 		uint8_t sign;
 	} sensorProperties;
 
-	void getSensorProperties_D7();							// popuni struct sa podacima o senzoru
+	void getSensorProperties_D1_INTERNALUSEONLY();			// d1 i d7 daju drugaciji odgovor - ovo je samo debugging
+	void getSensorProperties_D7();							// d7: popuni struct sa podacima o senzoru
 	bool isChecksumValid(std::vector<uint8_t> repl);
 
 };

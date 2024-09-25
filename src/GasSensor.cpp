@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <unistd.h>
@@ -27,6 +28,7 @@
 
 // pomocnici
 #include <chrono>
+#include <bitset>
 
 /*
  * DEBUGGING
@@ -48,7 +50,7 @@ using namespace std;
 /**
  * Create sensor instance, perform initialization
  */
-GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle, unsigned int default_lev) {
+GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle, int default_lev) {
 	this->DEBUG_LEVEL = default_lev;
 	this->ERROR_CNT = 0;
 	this->muxAddress = muxAddress;
@@ -56,7 +58,7 @@ GasSensor::GasSensor(MuxAdr_t muxAddress, int uartHandle, unsigned int default_l
 	this->uartHandle = uartHandle;
 
 	this->H_STAT = OK;	// za pocetak je OK, bilo koja greska ga kvari
-	init(2000);
+	init(SENSOR_INIT_mS);
 }
 
 GasSensor::~GasSensor() {
@@ -80,6 +82,10 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 		cout << "init: sensor connection check (get running lights)" << endl;
 	}
 	send(cmdRunningLightGetStatus);	// Nije bitan rezultat. Ako ne komunicira, dobice se timeout u send() metodu i postavice se H_STAT i ERROR_CNT
+
+	if (DEBUG_LEVEL == -4){
+		getSensorProperties_D1_INTERNALUSEONLY();
+	}
 
 	if(DEBUG_LEVEL >=2){
 		cout << "init: get props" << endl;
@@ -116,6 +122,41 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 
 }
 
+void GasSensor::getSensorProperties_D1_INTERNALUSEONLY(){
+	//
+	// VAZNO!! Saljem COMMAND 3 = "D1". Odgovor je drugaciji nego za D7
+	// Ovaj odgovor cak nema header!
+	//
+	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd1);
+
+	int expected = cmdGetTypeRangeUnitDecimals0xd1.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		return;
+	}
+
+	if (this->DEBUG_LEVEL == -4){
+		cout << "D1:";
+		for (int i = 0; i < reply.size(); i++) {
+			cout << "   0x" << setfill('0') << setw(2) << hex << static_cast<int>( reply.at(i) ) << "  " << std::dec;
+		}
+		cout << endl;
+		cout << "D1:";
+		for (int i = 0; i < reply.size(); i++) {
+			std::cout << " " << std::bitset<8>(reply.at(i));
+		}
+		cout << endl;		
+	}
+
+	int d1_sensorTipHex = reply.at(0);
+	int d1_maxRange = (reply.at(1) << 8) | reply.at(2);
+	string d1_unit = (reply.at(3) == 0x02) ? "ppm" : "ppb";
+	int d1_dec = ( reply.at(7) & 0b11110000 ) >> 4;	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
+	int d1_sgn = reply.at(7) & 0b00001111;			// sign bits 3~0
+	(void)0;
+}
+
+
 /**
  * Query parameters from sensor with _D7_ command, and populate struct sensorProperties.
  * @return nothing.
@@ -135,6 +176,20 @@ void GasSensor::getSensorProperties_D7() {
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
 	if (hdr) {
+		if (this->DEBUG_LEVEL == -4){
+			cout << "D7:";
+			for (int i = 0; i < reply.size(); i++) {
+				cout << "   0x" << setfill('0') << setw(2) << hex << static_cast<int>( reply.at(i) ) << "  " << std::dec;
+			}
+			cout << endl;
+			cout << "D7:";
+			for (int i = 0; i < reply.size(); i++) {
+				std::cout << " " << std::bitset<8>(reply.at(i));
+			}
+			cout << endl;
+			
+		}
+		
 		this->H_STAT = OK;
 		sensorProperties.tip = reply.at(2);
 		sensorProperties.maxRange = (reply.at(3) << 8) | reply.at(4);
@@ -155,16 +210,22 @@ void GasSensor::getSensorProperties_D7() {
 				strcpy(sensorProperties.unit_str, " _?_ ");
 				break;
 		}
-		uint8_t dec = reply.at(6) & 0b11110000;	// decimals bit 7~4, sign bits 3~0
-		uint8_t sgn = reply.at(6) & 0b00001111;	// decimals bit 7~4, sign bits 3~0
+		uint8_t dec = reply.at(6) & 0b11110000;	// decimal placess: bit 7~4
+		uint8_t sgn = reply.at(6) & 0b00001111;	// sign bits 3~0
 
+		int dec_po_njihovom = ((dec & 0b10000000) << 3) | ((dec & 0b01000000) << 2) | ((dec & 0b00100000) << 1) | (dec & 0b00010000);
+		int dec_shR = ((dec & 0b10000000) >> 3) | ((dec & 0b01000000) >> 2) | ((dec & 0b00100000) >> 1) | (dec & 0b00010000);
 		dec = dec >> 4;							// spustim ih skroz na desno
+		int dec_nj_shL = ((dec & 0b1000) << 3) | ((dec & 0b0100) << 2) | ((dec & 0b0010) << 1) | (dec & 0b0001);
+		int dec_mshR = ((dec & 0b1000) >> 3) | ((dec & 0b0100) >> 2) | ((dec & 0b0010) >> 1) | (dec & 0b0001);
+		
+		//originalno
 		uint8_t decimals = ((dec & 0b1000) << 3) | ((dec & 0b0100) << 2) | ((dec & 0b0010) << 1) | (dec & 0b0001);
 
 		uint16_t sign = ((sgn & 0b1000) << 3) | ((sgn & 0b0100) << 2) | ((sgn & 0b0010) << 1) | (sgn & 0b0001);
 		sensorProperties.decimals = decimals;		// dobije se 4. Jel' moguce da je tolika tacnost?
 		sensorProperties.sign = sign;				// dobije se 0 = "negative inhibition". Koji li im djavo to znaci??
-
+		(void)0;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;		// silently report
 		if(DEBUG_LEVEL > 0){
@@ -488,7 +549,6 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	// Ako ocekujem neki odgovor od senzora
 	if (txStruct.expectedReplyLen > 0) {
 		unsigned int mS = 0;
-		unsigned int timeOut_mS = 2000;		// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako za DVE SEKUNDE ne stigne nista, onda jbga!
 
 		/*
 		 * Na pocetku je buffer prazan tj serialDataAvail() == 0
@@ -500,7 +560,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 		while (serialDataAvail(this->uartHandle) < (int) txStruct.expectedReplyLen) {
 			usleep(1000);
 			mS++;
-			if (mS >= timeOut_mS) {
+			if (mS >= SENSOR_TIMEOUT_mS) {
 				// isteklo vreme!
 				// Samo break iz petlje, neka metod nastavi dalje, ako je potreban neki cleanup
 				this->H_STAT = SENSOR_TIMEOUT;
@@ -513,7 +573,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 		// ovde dodjemo kad je istekao timeout ili je stiglo dovoljno karaktera
 
 
-		if (mS < timeOut_mS) {
+		if (mS < SENSOR_TIMEOUT_mS) {
 			// ovde smo ako nije nastupio timeout i stiglo je dovoljno bajtova
 			while ( serialDataAvail(this->uartHandle) > 0 ) {
 				uint8_t x = serialGetchar(this->uartHandle);
@@ -593,14 +653,14 @@ unsigned int GasSensor::getErrorCount(){
 /**
  * @brief set debug verbosity from now on
  */
-void GasSensor::setDebugLevel(unsigned int level){
+void GasSensor::setDebugLevel(int level){
 	this->DEBUG_LEVEL = level;
 }
 
 /**
  * @brief get current debug verbosity
  */
-unsigned int GasSensor::getDebugLevel(){
+int GasSensor::getDebugLevel(){
 	return this->DEBUG_LEVEL;
 }
 

@@ -44,7 +44,7 @@ bool UartMux::setAddr(MuxAdr_t portNum1to8){
 		digitalWrite(UartMuX_pinS1, (hwAddr & 0b001) ? HIGH : LOW);
 		digitalWrite(UartMuX_pinS2, (hwAddr & 0b010) ? HIGH : LOW);
 		digitalWrite(UartMuX_pinS3, (hwAddr & 0b100) ? HIGH : LOW);
-		usleep(100 * 1000);		// guard time for pins to settle
+		usleep(20 * 1000);		// guard time for pins to settle
 		return true;
 	} else {
 		return false;

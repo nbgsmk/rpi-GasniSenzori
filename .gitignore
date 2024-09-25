@@ -1,3 +1,6 @@
 /Debug/
 /.metadata/
-/.SPASONOSNA cross compilation nota.txt.kate-swp
+/.*.kate-swp
+.vscode/settings.json
+.vscode/tasks.json
+src/x.out
