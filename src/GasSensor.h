@@ -6,7 +6,7 @@
 #ifndef SRC_GASSENSOR_H_
 #define SRC_GASSENSOR_H_
 
-#define MEASUREMENT_ERROR (int)-1
+#define MEASUREMENT_ERROR (float)-1
 
 
 #include "UartMux.h"
@@ -39,7 +39,7 @@ public:
 	void setLedOn();
 	void setLedOff();
 	bool getLedStatus();
-	int getMuxAddress();						// adresa na uart multiplekseru
+	MuxAdr_t getMuxAddress();					// adresa na uart multiplekseru
 	void setChecksumValidatorState(bool state);	// proverava se checksum rezultata ili se ignorise
 	bool getChecksumValidatorState();
 
@@ -47,11 +47,11 @@ public:
 	std::string getSensorTypeStr();				// na osnovu HEX vracam tekstualni naziv
 	int getMaxRange();							// maksimalni raspon merenja senzora
 	int getDecimals();							// broj decimala u rezultatu
-	int getGasConcentrationPpm();				// koncentracija gasa ppm
-	int getGasConcentrationMgM3();				// koncentracija gasa ug/m3
-	int getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
-	int getTemperature();						// sve zajedno merimo
-	int getRelativeHumidity();				// sve zajedno merimo
+	float getGasConcentrationPpm();				// koncentracija gasa ppm
+	float getGasConcentrationMgM3();				// koncentracija gasa ug/m3
+	float getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
+	float getTemperature();						// sve zajedno merimo
+	float getRelativeHumidity();				// sve zajedno merimo
 
 	// debug only
 	void sendRawBytes(const char *rawBytes, unsigned int size);
@@ -78,14 +78,16 @@ private:
 
 	struct {
 		uint8_t tip;
-		uint16_t maxRange;
-		char unit_str[15];
-		uint8_t decimals;
-		uint8_t sign;
+		float maxRange;
+		char unit_str[100];
+		int decimals;
+		int sign;
 	} sensorProperties;
 
-	void getSensorProperties_D1_INTERNALUSEONLY();			// d1 i d7 daju drugaciji odgovor - ovo je samo debugging
-	void getSensorProperties_D7();							// d7: popuni struct sa podacima o senzoru
+
+	// d1 i d7 daju drugaciji byte array kao odgovor
+	void getSensorProperties_D1();						// d1: popuni struct sa podacima o senzoru
+	void getSensorProperties_D7();						// d7: popuni struct sa podacima o senzoru
 	bool isChecksumValid(std::vector<uint8_t> repl);
 
 };

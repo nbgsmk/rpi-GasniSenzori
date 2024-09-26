@@ -17,14 +17,14 @@
 
 
 UartMux::UartMux() {
-	setAddr(adr_PWRON);
+	// setAddr(adr_PWRON);	// ne podesavaj nista! mozda ga vec neko drugi koristi
 	pinMode(UartMuX_pinS1, OUTPUT);
 	pinMode(UartMuX_pinS2, OUTPUT);
 	pinMode(UartMuX_pinS3, OUTPUT);
 }
 
 UartMux::~UartMux() {
-	setAddr(adr_PWRON);
+	// setAddr(adr_PWRON);	// ne podesavaj nista! mozda ga vec neko drugi koristi
 }
 
 

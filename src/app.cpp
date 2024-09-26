@@ -169,19 +169,19 @@ int main() {
 					int dec = co->getDecimals();
 					cout << "br decimala " << dec << endl;
 
-					int ppm = co->getGasConcentrationPpm();
+					auto ppm = co->getGasConcentrationPpm();
 					cout << "gas ppm " << ppm << endl;
 
-					int mg = co->getGasConcentrationMgM3();
+					auto mg = co->getGasConcentrationMgM3();
 					cout << "gas mg/m3 " << mg << endl;
 
-					int percOfMax = co->getGasPercentageOfMax();
+					auto percOfMax = co->getGasPercentageOfMax();
 					cout << "gas percentage of max scale " << percOfMax << endl;
 
-					float celsius = co->getTemperature();
+					auto celsius = co->getTemperature();
 					cout << "temperature " << celsius << " C " << endl;
 
-					float rh = co->getRelativeHumidity();
+					auto rh = co->getRelativeHumidity();
 					cout << "humidity " << rh << " % " << endl;
 
 					cout << "----  done  ----\n" << endl;
