@@ -30,6 +30,7 @@
 // pomocnici
 #include <chrono>
 #include <bitset>
+#include "Logger.h"
 
 /*
  * DEBUGGING
@@ -414,12 +415,22 @@ float GasSensor::getGasConcentrationPpm() {
 		return MEASUREMENT_ERROR;
 	}
 
+	int old = this->getDebugLevel();
+	this->setDebugLevel(-4);
+	if (this->DEBUG_LEVEL == -4){
+		// Logger *log = new Logger(-4);
+		cout << getSensorTypeStr() << " raw ppm: ";
+		Logger::dhex(reply);
+		cout << endl;		
+	}
+	this->setDebugLevel(old);
+	
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
-		float max = (float) (reply.at(4) * 256) + (reply.at(5));
-		float ppm = (float) (reply.at(6) * 256) + (reply.at(7));
+		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
+		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
 		ppm = ppm / powf(10.0, sensorProperties.decimals);
 		rezultat = ppm;
 	} else {
@@ -446,11 +457,22 @@ float GasSensor::getGasConcentrationMgM3() {
 		return MEASUREMENT_ERROR;
 	}
 
+	int old = this->getDebugLevel();
+	this->setDebugLevel(-4);
+	if (this->DEBUG_LEVEL == -4){
+		// Logger *log = new Logger(-4);
+		cout << getSensorTypeStr() << " raw mg/m3: ";
+		Logger::dhex(reply);
+		cout << endl;		
+	}
+	this->setDebugLevel(old);
+	
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
-		float max =  (float) (reply.at(4) * 256) + (reply.at(5));
-		float mgm3 = (float) (reply.at(2) * 256) + (reply.at(3));
+		float max =  (float) ( (reply.at(4) * 256) + (reply.at(5)) );
+		float mgm3 = (float) ( (reply.at(2) * 256) + (reply.at(3)) );
 		mgm3 = mgm3 / powf(10.0, sensorProperties.decimals);
 		rezultat = mgm3;
 	} else {
@@ -477,19 +499,29 @@ float GasSensor::getGasPercentageOfMax() {
 		return MEASUREMENT_ERROR;
 	}
 
+	int old = this->getDebugLevel();
+	this->setDebugLevel(-4);
+	if (this->DEBUG_LEVEL == -4){
+		// Logger *log = new Logger(-4);
+		cout << getSensorTypeStr() << " raw %: ";
+		Logger::dhex(reply);
+		cout << endl;		
+	}
+	this->setDebugLevel(old);
+
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
 		this->H_STAT = OK;
-		float ppm = (float) (reply.at(6) * 256) + (reply.at(7));
-		float max = (float) (reply.at(4) * 256) + (reply.at(5));
-		ppm = ppm / powf(10.0f, sensorProperties.decimals);
+		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
+		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
 		max = max / powf(10.0f, sensorProperties.decimals);
+		ppm = ppm / powf(10.0f, sensorProperties.decimals);
 		rezultat = (ppm / max) * 100;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
 	}
-	if ( (rezultat < 0) || (rezultat > 100) ) {
+	if (rezultat < 0) {
 		rezultat = MEASUREMENT_ERROR;
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
 	}

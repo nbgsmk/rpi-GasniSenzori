@@ -99,7 +99,7 @@ int main() {
 	cout << "o2-25 " << endl;
 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 1);
 	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 0);
-	cout << "app: ok!" << endl;
+	cout << "app: sensors created" << endl;
 	cout << endl;
 	
 
