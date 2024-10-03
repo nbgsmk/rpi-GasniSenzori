@@ -416,15 +416,11 @@ float GasSensor::getGasConcentrationPpm() {
 		return MEASUREMENT_ERROR;
 	}
 
-	int old = this->getDebugLevel();
-	this->setDebugLevel(-4);
 	if (this->DEBUG_LEVEL == -4){
 		cout << "(" << getSensorTypeStr() << " raw ppm: ";
 		Logger::dhex(reply);
 		cout << ")" << endl;		
 	}
-	this->setDebugLevel(old);
-	
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
@@ -457,15 +453,11 @@ float GasSensor::getGasConcentrationMgM3() {
 		return MEASUREMENT_ERROR;
 	}
 
-	int old = this->getDebugLevel();
-	this->setDebugLevel(-4);
 	if (this->DEBUG_LEVEL == -4){
 		cout << "(" << getSensorTypeStr() << " raw mg/m3: ";
 		Logger::dhex(reply);
 		cout << ")" << endl;		
 	}
-	this->setDebugLevel(old);
-	
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
@@ -498,14 +490,11 @@ float GasSensor::getGasPercentageOfMax() {
 		return MEASUREMENT_ERROR;
 	}
 
-	int old = this->getDebugLevel();
-	this->setDebugLevel(-4);
 	if (this->DEBUG_LEVEL == -4){
 		cout << "(" << getSensorTypeStr() << " raw %: ";
 		Logger::dhex(reply);
 		cout << ")" << endl;		
 	}
-	this->setDebugLevel(old);
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
