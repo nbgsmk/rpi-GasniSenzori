@@ -29,7 +29,7 @@
 //      moj_naziv	S[1..8] (broj na plocici uart mux-a)
 #define adr_CO 			4
 #define adr_H2S			5
-#define adr_O2			6
+#define adr_O2			3
 #define adr_itd			7
 #define adr_PWRON		1	// Posle ukljucenja izgleda da su svi pinovi multipleksera low, tj hardverski je 0b000, a na plocici tu pise P1. Ostavljam taj port za kontrolu kamere.
 

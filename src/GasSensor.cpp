@@ -252,7 +252,7 @@ void GasSensor::getSensorProperties_D1(){
 	
 	sensorProperties.decimals = (int) ( ( reply.at(7) & 0b11110000 ) >> 4 );	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
 	sensorProperties.sign = (int) ( reply.at(7) & 0b00001111 );			// sign bits 3~0
-	(void)0;
+	__asm("NOP");
 }
 
 
@@ -322,7 +322,8 @@ void GasSensor::getSensorProperties_D7() {
 		int dec_nj_shL = ((dec & 0b1000) << 3) | ((dec & 0b0100) << 2) | ((dec & 0b0010) << 1) | (dec & 0b0001);
 		int dec_mshR = ((dec & 0b1000) >> 3) | ((dec & 0b0100) >> 2) | ((dec & 0b0010) >> 1) | (dec & 0b0001);
 		
-		(void)0;
+		sensorProperties.decimals = 2;		// STOPSHIP!! Jedino ovo ima smisla ali cekam odgovor od ECSENSE
+		__asm("NOP");
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;		// silently report
 		if(DEBUG_LEVEL > 0){
@@ -418,10 +419,9 @@ float GasSensor::getGasConcentrationPpm() {
 	int old = this->getDebugLevel();
 	this->setDebugLevel(-4);
 	if (this->DEBUG_LEVEL == -4){
-		// Logger *log = new Logger(-4);
-		cout << getSensorTypeStr() << " raw ppm: ";
+		cout << "(" << getSensorTypeStr() << " raw ppm: ";
 		Logger::dhex(reply);
-		cout << endl;		
+		cout << ")" << endl;		
 	}
 	this->setDebugLevel(old);
 	
@@ -460,10 +460,9 @@ float GasSensor::getGasConcentrationMgM3() {
 	int old = this->getDebugLevel();
 	this->setDebugLevel(-4);
 	if (this->DEBUG_LEVEL == -4){
-		// Logger *log = new Logger(-4);
-		cout << getSensorTypeStr() << " raw mg/m3: ";
+		cout << "(" << getSensorTypeStr() << " raw mg/m3: ";
 		Logger::dhex(reply);
-		cout << endl;		
+		cout << ")" << endl;		
 	}
 	this->setDebugLevel(old);
 	
@@ -502,10 +501,9 @@ float GasSensor::getGasPercentageOfMax() {
 	int old = this->getDebugLevel();
 	this->setDebugLevel(-4);
 	if (this->DEBUG_LEVEL == -4){
-		// Logger *log = new Logger(-4);
-		cout << getSensorTypeStr() << " raw %: ";
+		cout << "(" << getSensorTypeStr() << " raw %: ";
 		Logger::dhex(reply);
-		cout << endl;		
+		cout << ")" << endl;		
 	}
 	this->setDebugLevel(old);
 
@@ -514,7 +512,7 @@ float GasSensor::getGasPercentageOfMax() {
 		this->H_STAT = OK;
 		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
 		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
-		max = max / powf(10.0f, sensorProperties.decimals);
+		// max = max / powf(10.0f, sensorProperties.decimals);		// STOPSHIP ! ni drugde nisam delio ovo sa
 		ppm = ppm / powf(10.0f, sensorProperties.decimals);
 		rezultat = (ppm / max) * 100;
 	} else {

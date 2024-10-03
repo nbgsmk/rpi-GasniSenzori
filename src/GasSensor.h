@@ -48,7 +48,7 @@ public:
 	int getMaxRange();							// maksimalni raspon merenja senzora
 	int getDecimals();							// broj decimala u rezultatu
 	float getGasConcentrationPpm();				// koncentracija gasa ppm
-	float getGasConcentrationMgM3();				// koncentracija gasa ug/m3
+	float getGasConcentrationMgM3();			// koncentracija gasa ug/m3
 	float getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
 	float getTemperature();						// sve zajedno merimo
 	float getRelativeHumidity();				// sve zajedno merimo
