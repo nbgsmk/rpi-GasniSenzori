@@ -122,7 +122,7 @@ int main() {
 		 * blok 8 = DEBUG_LEVEL tes + senzor NIJE ispravan
 		 */
 
-		int blok = 1;
+		int blok = 3;
 		cout << endl;
 		cout << "-----------" << endl;
 		cout << "test blok " << blok << endl;
@@ -326,6 +326,8 @@ int main() {
 				cout << "sensor response time" << endl;
 				cout << "--------------------" << endl;
 				cout << "neophodan je debug level >=2" << endl;
+
+				GasSensor *xr = new GasSensor(adr_O2, uartFileDescriptor, 3);
 				for (;;) {
 					b->trepCnt(blok, 5, 100);
 
@@ -341,9 +343,8 @@ int main() {
 					const std::vector<uint8_t> cmd_running_light_get_status = { 0xFF,       0x01,    0x8A,     0x00,   0x00,    0x00,     0x00,    0x00,    0x75 };
 					const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9, true };			// slagacu da nije bitan checksum
 
-					co->setDebugLevel(2);
-					cout << "typ " << co->getSensorTypeStr() << endl;
-					float x = co->getGasConcentrationPpm();
+					cout << "typ " << xr->getSensorTypeStr() << endl;
+					float x = xr->getGasConcentrationPpm();
 					cout << "ppm=" << x << endl;
 					usleep(1000 * 5000);
 				}
