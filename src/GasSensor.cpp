@@ -623,14 +623,15 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 	if(DEBUG_LEVEL >= 2) {
 		cout << "send sajz " << txStruct.cmd.size() << ", will expect " << txStruct.expectedReplyLen << endl;
-		if(DEBUG_LEVEL >= 3) {
-			cout << "cmd to send:";
-			for (unsigned int i = 0; i < txStruct.cmd.size(); ++i) {
-				cout << " " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << std::dec;
-			}
-			cout << std::dec << endl;
-		}
 	}
+	if(DEBUG_LEVEL >= 3) {
+		cout << "cmd to send:";
+		for (unsigned int i = 0; i < txStruct.cmd.size(); ++i) {
+			cout << " " << std::hex << static_cast<unsigned int>(txStruct.cmd[i]) << std::dec;
+		}
+		cout << std::dec << endl;
+	}
+
 	for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
 		serialPutchar(this->uartHandle, txStruct.cmd[i]);
 		// At 9600 baud, the 1 bit time is ~104 microseconds, and 1 full character is 1.04mS
@@ -679,8 +680,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 
 			// pa sad slicno ali za console debugging
-			if (DEBUG_LEVEL >= 2) {
-				cout << "reply received after " << mS << "mS" << endl;
+			if (DEBUG_LEVEL >= 3) {
 				cout << "rcv: ";
 				if (reply.size() == 0) {
 					cout << CON_RED << "NONE!";		// nije stiglo nista! prazan vector zasluzuje crvena slova!
@@ -691,6 +691,9 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 					cout << " " << std::hex << static_cast<unsigned int>(reply.at(i)) << std::dec;	// i to ovoliko bajtova
 				}
 				cout << CON_RESET << endl;			// ispis na normalu
+			}
+			if (DEBUG_LEVEL >= 2) {
+				cout << "reply received after " << mS << "mS" << endl;
 				cout << endl;
 			}
 
