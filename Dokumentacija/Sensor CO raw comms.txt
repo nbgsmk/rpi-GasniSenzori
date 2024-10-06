@@ -78,6 +78,24 @@ rx (13) chars
 
 
 
+-----------------------------------------
+
+RUCNO SAM podesio da su decimals = 2
+dobije se
+
+sensor tip str CO
+---- measurements ----
+br decimala 2
+CO raw ppm:    0xff     0x86     0x00     0xc0     0x00     0x64     0x00     0xa7     0xaf  
+gas ppm 1.67
+CO raw mg/m3:    0xff     0x86     0x00     0xc0     0x00     0x64     0x00     0xa7     0xaf  
+gas mg/m3 1.92
+CO raw %:    0xff     0x86     0x00     0xc0     0x00     0x64     0x00     0xa7     0xaf  
+gas percentage of max scale 167
+temperature 30.24 C 
+humidity 42.68 % 
+----  done  ----
+
 
 
 
