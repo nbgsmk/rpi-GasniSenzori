@@ -97,7 +97,7 @@ int main() {
 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 0);
 	cout << "app: neispravan senzor " << endl;
 	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 0);
-	cout << "app: ako nista nije napisao osim ovih tagova (\'app: co-100\'...), dobro je!" << endl;
+	cout << "app: ako nista nije napisao osim tagova (\'app: co-100\'...), dobro je!" << endl;
 	cout << "app: sensors created" << endl;
 	cout << endl;
 	
@@ -120,12 +120,13 @@ int main() {
 		 * blok 6 = prozivka u krug
 		 * blok 7 = DEBUG_LEVEL test + senzor ispravan
 		 * blok 8 = DEBUG_LEVEL tes + senzor NIJE ispravan
+		 * blok 9 = unosim greske u uart vezu i prikazujem sta se desava
 		 */
 
-		int blok = 3;
+		int blok = 9;
 		cout << endl;
 		cout << "-----------" << endl;
-		cout << "test blok " << blok << endl;
+		cout << "TEST BLOK " << blok << endl;
 		cout << "-----------" << endl;
 
 		switch (blok) {
@@ -326,8 +327,8 @@ int main() {
 				cout << "sensor response time" << endl;
 				cout << "--------------------" << endl;
 				cout << "neophodan je debug level >=2" << endl;
-
 				GasSensor *xr = new GasSensor(adr_O2, uartFileDescriptor, 3);
+
 				for (;;) {
 					b->trepCnt(blok, 5, 100);
 
@@ -507,7 +508,7 @@ int main() {
 					//////////////////////////////////////
 					//////////////////////////////////////
 					cout << "----- talk to nepostojeci -----" << endl;
-					cout << "mux will be " << 8 << endl;
+					cout << "mux will be " << nepostojeci->getMuxAddress() << endl;
 
 					cout << "--------" << endl;
 					cout << "DEBUG_LEVEL 0 => silent, ne sme prijaviti NISTA sto ga nisam pitao" << endl;
@@ -547,6 +548,77 @@ int main() {
 					usleep(1000 * 10000);
 				}
 
+				break;
+			}
+
+
+			//////////////////
+			// ERROR reporting
+			//////////////////
+			case 9: {
+				cout << "--------------------------------------------" << endl;
+				cout << "Sensor errors" << endl;
+				cout << "O2 senzor je jedini povezan na uart test rig" << endl;
+				cout << "--------------------------------------------" << endl;
+				
+				float merenje;
+
+				for ( ; ; ) {
+					cout << "kreiram senzor GasSensor *xx = new GasSensor..." << endl;
+					GasSensor *xx = new GasSensor(adr_O2, uartFileDescriptor, 0);
+					cout << "da li/koliko je bilo gresaka: " << xx->getErrorCode() << endl;
+					cout << "mux adr:	"	<< xx->getMuxAddress() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					xx->setChecksumValidatorState(true);
+					cout << "CRC check is:	" 	<< xx->getChecksumValidatorState()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					cout << "setting led off" << endl;
+					xx->setLedOff();
+					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "setting led on" << endl;
+					xx->setLedOn();
+					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					cout << "tip (hex):	" 	<< xx->getSensorTypeHex() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "tip (str):	" 	<< xx->getSensorTypeStr() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "max range:	" 	<< xx->getMaxRange() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "decimala:	" 	<< xx->getDecimals() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "ppm:		" 	<< xx->getGasConcentrationPpm() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "mg/m3:		" 	<< xx->getGasConcentrationMgM3() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "% of max:	" 	<< xx->getGasPercentageOfMax()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "temp °C:	" 	<< xx->getTemperature()			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "humidity:	" 	<< xx->getRelativeHumidity()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					cout << endl;
+					cout << "------------ pa sve isto bez checksum validacije ------------" << endl;
+					xx->setChecksumValidatorState(false);
+					cout << "CRC check is: " 	<< xx->getChecksumValidatorState()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					cout << "setting led off" << endl;
+					xx->setLedOff();
+					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "setting led on" << endl;
+					xx->setLedOn();
+					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					cout << "tip (hex):	" 	<< xx->getSensorTypeHex() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "tip (str):	" 	<< xx->getSensorTypeStr() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "max range:	" 	<< xx->getMaxRange() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "decimala:	" 	<< xx->getDecimals() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "ppm:		" 	<< xx->getGasConcentrationPpm() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "mg/m3:		" 	<< xx->getGasConcentrationMgM3() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "% of max:	" 	<< xx->getGasPercentageOfMax()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "temp °C:	" 	<< xx->getTemperature()			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "humidity:	" 	<< xx->getRelativeHumidity()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+
+					cout << endl;
+					cout << "mala pauza..." << endl;
+					usleep(1000 * 10000);
+					cout << "...pa cemo ponovo" << endl;
+					cout << endl;
+					cout << endl;
+
+				}
 				break;
 			}
 
