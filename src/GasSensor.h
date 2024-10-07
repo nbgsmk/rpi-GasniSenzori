@@ -20,14 +20,14 @@ public:
 
 	enum ErrCodes_t {
 		OK = 0,
-		NOT_DEFINED,
-		INIT_FAIL,
-		UNEXPECTED_SENSOR_TYPE,
-		WRONG_RESPONSE_HEADER,
-		SENSOR_TIMEOUT,
-		MEASUREMENT_INCOMPLETE,
-		MEASUREMENT_CHECKSUM_FAIL,
-		MEASUREMENT_OUT_OF_RANGE,
+		NOT_DEFINED = 1,
+		INIT_FAIL = 2,
+		UNEXPECTED_SENSOR_TYPE = 3,
+		WRONG_RESPONSE_HEADER = 4,
+		SENSOR_TIMEOUT = 5,
+		MEASUREMENT_INCOMPLETE = 6,
+		MEASUREMENT_CHECKSUM_FAIL = 7,
+		MEASUREMENT_OUT_OF_RANGE = 8,
 	};
 	ErrCodes_t getErrorCode();
 	unsigned int getErrorCount();
@@ -40,7 +40,6 @@ public:
 	void setLedOff();
 	bool getLedStatus();
 	MuxAdr_t getMuxAddress();					// adresa na uart multiplekseru
-	void setChecksumValidatorState(bool state);	// proverava se checksum rezultata ili se ignorise
 	bool getChecksumValidatorState();
 
 	int getSensorTypeHex();						// HEX vrednost - tip senzora
@@ -70,6 +69,7 @@ private:
 	bool runningLed;
 	int uartHandle;
 	bool checksumValidatorIsActive = true;
+	void setChecksumValidatorState(bool state);	// proverava se checksum rezultata ili se ignorise
 
 	const unsigned int SENSOR_INIT_mS = 1000;		// minimalno vreme da se stabilizuje nakon power-on. Makar da LED pocne da trepce :-)
 	const unsigned int SENSOR_TIMEOUT_mS = 1000;	// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako ne odgovori za celu sekundu, nesto debelo ne valja!
@@ -83,7 +83,6 @@ private:
 		int decimals;
 		int sign;
 	} sensorProperties;
-
 
 	// d1 i d7 daju drugaciji byte array kao odgovor
 	void getSensorProperties_D1();						// d1: popuni struct sa podacima o senzoru

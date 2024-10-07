@@ -22,6 +22,16 @@ AT$MYCONFIG="usbnetmode",0
 
 -----------------------------------------
 
+sudo echo -e "AT\r\n" > /dev/ttyUSB2
+sudo echo -e "AT+DIALMODE=0\r\n" > /dev/ttyUSB2
+sudo echo -e "AT\$MYCONFIG=\"usbnetmode\",0\r\n" > /dev/ttyUSB2
+
+...
+chmod u+x ...
+crontab -e
+@restart /home/peca/...
+
+
 
 ping -I wlan0 8.8.8.8
 ping -I usb0 8.8.8.8

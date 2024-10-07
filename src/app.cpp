@@ -95,9 +95,9 @@ int main() {
 	GasSensor *h2s = new GasSensor(adr_H2S, uartFileDescriptor, 0);
 	cout << "app: o2-25 " << endl;
 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 0);
-	cout << "app: neispravan senzor " << endl;
+	cout << "app: na primer neispravan senzor " << endl;
 	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 0);
-	cout << "app: ako nista nije napisao osim tagova (\'app: co-100\'...), dobro je!" << endl;
+	cout << "app: ako nista nije napisao osim tagova (\'app: co-100\'...), dobro je. Cak i ako ima gresaka-dobro je!" << endl;
 	cout << "app: sensors created" << endl;
 	cout << endl;
 	
@@ -114,7 +114,7 @@ int main() {
 		/**
 		 * blok 1 = talk to sensors normally
 		 * blok 2 = send raw bytes to sensor 
-		 * blok 3 = sensor response time (ispada da je oko 30-40mS)
+		 * blok 3 = sensor response time (Rpi4: 100..110mS. Varijacije na uart test rigu 80..150mS)
 		 * blok 4 = UartMux test
 		 * blok 5 = svaki senzor mora da zna svoj tip i adresu
 		 * blok 6 = prozivka u krug
@@ -123,7 +123,7 @@ int main() {
 		 * blok 9 = unosim greske u uart vezu i prikazujem sta se desava
 		 */
 
-		int blok = 9;
+		int blok = 1;
 		cout << endl;
 		cout << "-----------" << endl;
 		cout << "TEST BLOK " << blok << endl;
@@ -135,7 +135,7 @@ int main() {
 			// TALK TO SENSORS NORMALLY //
 			//////////////////////////////
 			case 1: {
-				b->trepCnt(blok, 5, 250);
+				// b->trepCnt(blok, 5, 250);
 				for (;;) {
 					///////////////////////////
 					///////////////////////////
@@ -146,7 +146,7 @@ int main() {
 					cout << "mux will be " << adr_CO << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
-						b->trep(5, 50);
+						// b->trep(5, 50);
 						if (co->getLedStatus()) {
 							cout << "led should be off" << endl;
 							co->setLedOff();
@@ -164,8 +164,8 @@ int main() {
 					cout << "sensor tip str " << st << endl;
 
 
-					b->trep(5, 50);
-					b->trep(5, 50);
+					// b->trep(5, 50);
+					// b->trep(5, 50);
 					cout << "---- measurements ----" << endl;
 
 					int dec = co->getDecimals();
@@ -200,7 +200,7 @@ int main() {
 					cout << "mux will be " << adr_H2S << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
-						b->trep(5, 50);
+						// b->trep(5, 50);
 						if (h2s->getLedStatus()) {
 							cout << "led should be off" << endl;
 							h2s->setLedOff();
@@ -218,8 +218,8 @@ int main() {
 					cout << "sensor tip str " << st << endl;
 
 
-					b->trep(5, 50);
-					b->trep(5, 50);
+					// b->trep(5, 50);
+					// b->trep(5, 50);
 					cout << "---- measurements ----" << endl;
 
 					dec = h2s->getDecimals();
@@ -255,7 +255,7 @@ int main() {
 					cout << "mux will be " << adr_O2 << endl;
 					cout << "toggle sensor running led a few times, just to know we are here" << endl;
 					for (int i = 0; i < 3; ++i) {
-						b->trep(5, 50);
+						// b->trep(5, 50);
 						if (o2->getLedStatus()) {
 							cout << "led should be off" << endl;
 							o2->setLedOff();
@@ -273,8 +273,8 @@ int main() {
 					cout << "sensor tip str " << st << endl;
 
 
-					b->trep(5, 50);
-					b->trep(5, 50);
+					// b->trep(5, 50);
+					// b->trep(5, 50);
 					cout << "---- measurements ----" << endl;
 
 					dec = o2->getDecimals();
@@ -309,7 +309,7 @@ int main() {
 				cout << "send raw bytes to sensor" << endl;
 				cout << "------------------------" << endl;
 				for (;;) {
-					b->trepCnt(blok, 5, 250);
+					// b->trepCnt(blok, 5, 250);
 
 					const char s[] = { 'l', 'e', 'v', 'o', ' ', 'd', 'e', 's', 'n', 'o', '\n' };
 					// char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
@@ -325,28 +325,15 @@ int main() {
 			///////////////////////
 			case 3: {
 				cout << "sensor response time" << endl;
-				cout << "--------------------" << endl;
+				cout << "testiram samo getPpm.. i getTip.." << endl;
+				cout << "---------------------------------" << endl;
 				cout << "neophodan je debug level >=2" << endl;
-				GasSensor *xr = new GasSensor(adr_O2, uartFileDescriptor, 3);
+				GasSensor *xr = new GasSensor(adr_O2, uartFileDescriptor, 2);
 
 				for (;;) {
-					b->trepCnt(blok, 5, 100);
-
-					// LED OFF
-					const std::vector<uint8_t> cmd_running_light_off = { 0xFF, 0x01, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x77 };
-					const CmdStruct_t cmdRunningLightOff = { cmd_running_light_off, 2, false };		// slagacu da nije bitan checksum
-
-					// LED ON
-					const std::vector<uint8_t> cmd_running_light_on = { 0xFF,       0x01,    0x89,     0x00,   0x00,    0x00,     0x00,    0x00,    0x76};
-					const CmdStruct_t cmdRunningLightOn = { cmd_running_light_on, 2, false };		// slagacu da nije bitan checksum
-
-					// LED STATUS
-					const std::vector<uint8_t> cmd_running_light_get_status = { 0xFF,       0x01,    0x8A,     0x00,   0x00,    0x00,     0x00,    0x00,    0x75 };
-					const CmdStruct_t cmdRunningLightGetStatus = { cmd_running_light_get_status, 9, true };			// slagacu da nije bitan checksum
-
-					cout << "typ " << xr->getSensorTypeStr() << endl;
-					float x = xr->getGasConcentrationPpm();
-					cout << "ppm=" << x << endl;
+					cout << "get typ " << xr->getSensorTypeStr() << endl;
+					float ppmf = xr->getGasConcentrationPpm();
+					cout << "get ppm=" << ppmf << endl;
 					usleep(1000 * 5000);
 				}
 				break;
@@ -360,7 +347,7 @@ int main() {
 				for (;;) {
 					cout << "uartmux test" << endl;
 					cout << "------------" << endl;
-					b->trepCnt(blok, 5, 250);
+					// b->trepCnt(blok, 5, 250);
 
 					vector<int> v;
 					v.push_back(3);			// raw number je ok
@@ -556,44 +543,20 @@ int main() {
 			// ERROR reporting
 			//////////////////
 			case 9: {
-				cout << "--------------------------------------------" << endl;
-				cout << "Sensor errors" << endl;
-				cout << "O2 senzor je jedini povezan na uart test rig" << endl;
-				cout << "--------------------------------------------" << endl;
 				
 				float merenje;
 
 				for ( ; ; ) {
-					cout << "kreiram senzor GasSensor *xx = new GasSensor..." << endl;
+					cout << endl;
+					cout << "-------------------------------------" << endl;
+					cout << "Sensor errors" << endl;
+					cout << "O2 je jedini povezan na uart test rig" << endl;
+					cout << "-------------------------------------" << endl;
+					cout << "kreiram GasSensor *xx = new GasSensor..." << endl;
 					GasSensor *xx = new GasSensor(adr_O2, uartFileDescriptor, 0);
 					cout << "da li/koliko je bilo gresaka: " << xx->getErrorCode() << endl;
 					cout << "mux adr:	"	<< xx->getMuxAddress() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-
-					xx->setChecksumValidatorState(true);
-					cout << "CRC check is:	" 	<< xx->getChecksumValidatorState()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-
-					cout << "setting led off" << endl;
-					xx->setLedOff();
-					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "setting led on" << endl;
-					xx->setLedOn();
-					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-
-					cout << "tip (hex):	" 	<< xx->getSensorTypeHex() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "tip (str):	" 	<< xx->getSensorTypeStr() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "max range:	" 	<< xx->getMaxRange() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "decimala:	" 	<< xx->getDecimals() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "ppm:		" 	<< xx->getGasConcentrationPpm() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "mg/m3:		" 	<< xx->getGasConcentrationMgM3() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "% of max:	" 	<< xx->getGasPercentageOfMax()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "temp °C:	" 	<< xx->getTemperature()			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "humidity:	" 	<< xx->getRelativeHumidity()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-
-					cout << endl;
-					cout << "------------ pa sve isto bez checksum validacije ------------" << endl;
-					xx->setChecksumValidatorState(false);
-					cout << "CRC check is: " 	<< xx->getChecksumValidatorState()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-
+					cout << "CRC checking:	" 	<< xx->getChecksumValidatorState()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "setting led off" << endl;
 					xx->setLedOff();
 					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
@@ -616,7 +579,6 @@ int main() {
 					usleep(1000 * 10000);
 					cout << "...pa cemo ponovo" << endl;
 					cout << endl;
-					cout << endl;
 
 				}
 				break;
@@ -625,7 +587,7 @@ int main() {
 		}
 
 		for (;;) {
-			b->trep(5, 50);
+			// b->trep(5, 50);
 		}
 
 	}

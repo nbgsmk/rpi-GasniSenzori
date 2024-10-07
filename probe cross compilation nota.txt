@@ -163,4 +163,15 @@ aarch64-linux-gnu-g++ --sysroot=$SYSROOT -I$SYSROOT/usr -L$SYSROOT/usr/lib/ -lwi
 
 
 
+AT+SIMCOMATI
+Manufacturer: INCORPORATED
+Model: A7670E-FASE
+Revision: A011B04A7670M7_F
+A7670M7_B04V02_220927
+QCN:
+IMEI: 867255074486152
+MEID:
++GCAP: +CGSM,+FCLASS,+DS
+DeviceInfo:
+OK
 

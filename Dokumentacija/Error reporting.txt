@@ -1,0 +1,184 @@
+-----------
+TEST BLOK 9
+-----------
+-------------------------------------
+Sensor errors
+O2 je jedini povezan na uart test rig
+-------------------------------------
+
+=====================================
+=========== PASS THROUGH ============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 0   errorCode: 0
+CRC checking:   1        errorCount: 0   errorCode: 0
+setting led off
+led stat:       0        errorCount: 0   errorCode: 0
+setting led on
+led stat:       1        errorCount: 0   errorCode: 0
+tip (hex):      34       errorCount: 0   errorCode: 0
+tip (str):      O2       errorCount: 0   errorCode: 0
+max range:      25       errorCount: 0   errorCode: 0
+decimala:       2        errorCount: 0   errorCode: 0
+ppm:            20.9     errorCount: 0   errorCode: 0
+mg/m3:          271.7    errorCount: 0   errorCode: 0
+% of max:       83.6     errorCount: 0   errorCode: 0
+temp °C:        26.21    errorCount: 0   errorCode: 0
+humidity:       48.27    errorCount: 0   errorCode: 0
+
+
+=====================================
+=========== DELAY 500mS =============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 0   errorCode: 0
+CRC checking:   1        errorCount: 0   errorCode: 0
+setting led off
+led stat:       0        errorCount: 0   errorCode: 0
+setting led on
+led stat:       1        errorCount: 0   errorCode: 0
+tip (hex):      34       errorCount: 0   errorCode: 0
+tip (str):      O2       errorCount: 0   errorCode: 0
+max range:      25       errorCount: 0   errorCode: 0
+decimala:       2        errorCount: 0   errorCode: 0
+ppm:            20.9     errorCount: 0   errorCode: 0
+mg/m3:          271.7    errorCount: 0   errorCode: 0
+% of max:       83.6     errorCount: 0   errorCode: 0
+temp °C:        26.24    errorCount: 0   errorCode: 0
+humidity:       48.27    errorCount: 0   errorCode: 0
+
+
+=====================================
+============ DROP BYTE ==============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 2   errorCode: 0
+CRC checking:   1        errorCount: 2   errorCode: 0
+setting led off
+led stat:       0        errorCount: 3   errorCode: 5
+setting led on
+led stat:       0        errorCount: 4   errorCode: 5
+tip (hex):      0        errorCount: 4   errorCode: 5
+tip (str):      hmm...nepoznat senzor!?  errorCount: 4   errorCode: 3
+max range:      0        errorCount: 4   errorCode: 3
+decimala:       0        errorCount: 4   errorCode: 3
+ppm:            -1       errorCount: 5   errorCode: 5
+mg/m3:          -1       errorCount: 6   errorCode: 5
+% of max:       -1       errorCount: 7   errorCode: 5
+temp °C:        -1       errorCount: 8   errorCode: 5
+humidity:       -1       errorCount: 9   errorCode: 5
+
+
+=====================================
+=========== INSERT BYTE =============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 2   errorCode: 0
+CRC checking:   1        errorCount: 2   errorCode: 0
+setting led off
+led stat:       0        errorCount: 3   errorCode: 0
+setting led on
+led stat:       1        errorCount: 4   errorCode: 0
+tip (hex):      34       errorCount: 4   errorCode: 0
+tip (str):      O2       errorCount: 4   errorCode: 0
+max range:      25       errorCount: 4   errorCode: 0
+decimala:       0        errorCount: 4   errorCode: 0
+ppm:            6408     errorCount: 5   errorCode: 0
+mg/m3:          27170    errorCount: 6   errorCode: 0
+% of max:       58.2122  errorCount: 7   errorCode: 0
+temp °C:        107.62   errorCount: 8   errorCode: 0
+humidity:       133.31   errorCount: 9   errorCode: 8
+
+
+=====================================
+============ DATA ERROR =============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 2   errorCode: 0
+CRC checking:   1        errorCount: 2   errorCode: 0
+setting led off
+led stat:       0        errorCount: 3   errorCode: 0
+setting led on
+led stat:       0        errorCount: 4   errorCode: 0
+tip (hex):      34       errorCount: 4   errorCode: 0
+tip (str):      O2       errorCount: 4   errorCode: 0
+max range:      101      errorCount: 4   errorCode: 0
+decimala:       2        errorCount: 4   errorCode: 0
+ppm:            20.9     errorCount: 5   errorCode: 0
+mg/m3:          258.9    errorCount: 6   errorCode: 0
+% of max:       83.6     errorCount: 7   errorCode: 0
+temp °C:        26.23    errorCount: 8   errorCode: 0
+humidity:       48.27    errorCount: 9   errorCode: 0
+
+
+=====================================
+=========== HEADER ERROR ============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 2   errorCode: 0
+CRC checking:   1        errorCount: 2   errorCode: 0
+setting led off
+led stat:       0        errorCount: 3   errorCode: 4
+setting led on
+led stat:       0        errorCount: 4   errorCode: 4
+tip (hex):      34       errorCount: 4   errorCode: 4
+tip (str):      O2       errorCount: 4   errorCode: 0
+max range:      26649    errorCount: 4   errorCode: 0
+decimala:       2        errorCount: 4   errorCode: 0
+ppm:            -1       errorCount: 5   errorCode: 8
+mg/m3:          -1       errorCount: 6   errorCode: 8
+% of max:       -1       errorCount: 7   errorCode: 8
+temp °C:        -1       errorCount: 8   errorCode: 4
+humidity:       -1       errorCount: 9   errorCode: 8
+
+
+=====================================
+============ DROP+INSERT ============
+=====================================
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 2   errorCode: 0
+CRC checking:   1        errorCount: 2   errorCode: 0
+setting led off
+led stat:       0        errorCount: 3   errorCode: 0
+setting led on
+led stat:       1        errorCount: 4   errorCode: 0
+tip (hex):      34       errorCount: 4   errorCode: 0
+tip (str):      O2       errorCount: 4   errorCode: 0
+max range:      25       errorCount: 4   errorCode: 0
+decimala:       2        errorCount: 4   errorCode: 0
+ppm:            20.9     errorCount: 5   errorCode: 0
+mg/m3:          271.79   errorCount: 6   errorCode: 0
+% of max:       83.6     errorCount: 7   errorCode: 0
+temp °C:        26.26    errorCount: 8   errorCode: 0
+humidity:       48.47    errorCount: 9   errorCode: 0
+
+
+=====================================
+=========== SVE ODJEDNOM ============
+=====================================
+
+
+kreiram GasSensor *xx = new GasSensor...
+da li/koliko je bilo gresaka: 0
+mux adr:        3        errorCount: 2   errorCode: 0
+CRC checking:   1        errorCount: 2   errorCode: 0
+setting led off
+led stat:       0        errorCount: 3   errorCode: 4
+setting led on
+led stat:       0        errorCount: 4   errorCode: 4
+tip (hex):      34       errorCount: 4   errorCode: 4
+tip (str):      O2       errorCount: 4   errorCode: 0
+max range:      26725    errorCount: 4   errorCode: 0
+decimala:       2        errorCount: 4   errorCode: 0
+ppm:            -1       errorCount: 5   errorCode: 8
+mg/m3:          -1       errorCount: 6   errorCode: 8
+% of max:       -1       errorCount: 7   errorCode: 8
+temp °C:        -1       errorCount: 8   errorCode: 4
+humidity:       -1       errorCount: 9   errorCode: 8
