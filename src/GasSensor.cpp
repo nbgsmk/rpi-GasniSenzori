@@ -236,14 +236,14 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1(){
 		cout << endl;		
 	}
 
-	unsigned int expected = cmdGetTypeRangeUnitDecimals0xd1.expectedReplyLen;
-	if (reply.size() < expected) {
-		// H_STAT je vec podesen u metodu send()
-		// ako nema dovoljno podataka, izadji
-		return H_STAT;
+
+	// H_STAT je vec podesen u metodu send()
+	sensorProperties.state = H_STAT;	// ---> proveriti prilikom procesiranja merenja
+	if (OK != H_STAT) {					// ako nije ok, nema svrhe ici dalje
+		return H_STAT;					// ukljucujuci i timeout, nedovoljno bajtova, checksum ako je ukljucen itd
 	}
 
-	// imam dovoljno bajtova. da vidim da li su dobri
+	// H_STAT je sigurno OK, send() je vratio ok
 
 	sensorProperties.tip = reply.at(0);
 	sensorProperties.maxRange = (float) ( (reply.at(1) << 8) | reply.at(2) );
@@ -257,13 +257,15 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1(){
 			break;
 
 		default:
-			strcpy(sensorProperties.unit_str, "D1: _?_ ");
+			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
+			strcpy(sensorProperties.unit_str, "d1: _?_ ");
 			break;
 	}
 	sensorProperties.decimals = (int) ( ( reply.at(7) & 0b11110000 ) >> 4 );	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
-	sensorProperties.sign = (int) ( reply.at(7) & 0b00001111 );			// sign bits 3~0
+	sensorProperties.sign = (int) ( reply.at(7) & 0b00001111 );					// sign bits 3~0
 
-	return H_STAT;		// propagiram H_STAT u caller metod (sta god da je vratio send()
+	sensorProperties.state = this->H_STAT;
+	return H_STAT;		// propagiram H_STAT u caller metod (sta god da je vratio send())
 }
 
 
@@ -291,14 +293,13 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 		cout << endl;
 	}
 
-	unsigned int expected = cmdGetTypeRangeUnitDecimals0xd7.expectedReplyLen;
-	if (reply.size() < expected) {
-		// H_STAT je vec podesen u metodu send()
-		// ako nema dovoljno podataka, izadji
-		return H_STAT;
+	// H_STAT je vec podesen u metodu send()
+	sensorProperties.state = H_STAT;	// ---> proveriti prilikom procesiranja merenja
+	if (OK != H_STAT) {					// ako nije ok, nema svrhe ici dalje
+		return H_STAT;					// ukljucujuci i timeout, nedovoljno bajtova, checksum ako je ukljucen itd
 	}
 
-	// imam dovoljno bajtova. da vidim da li su dobri
+	// H_STAT je sigurno OK, send() je vratio ok
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
 	if (hdr) {
@@ -318,6 +319,7 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 				break;
 
 			default:
+				this->H_STAT = UNEXPECTED_SENSOR_TYPE;
 				strcpy(sensorProperties.unit_str, "d7: _?_ ");
 				break;
 		}
@@ -344,6 +346,7 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 		}
 	}
 
+	sensorProperties.state = this->H_STAT;
 	return H_STAT; 		// propagiram H_STAT u caller metod (sta god da je vratio send()
 }
 

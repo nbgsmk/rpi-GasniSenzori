@@ -77,6 +77,7 @@ private:
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 
 	struct {
+		ErrCodes_t state = NOT_DEFINED;			// za sada write only ali ga kasnije ne proveravam. // TODO
 		uint8_t tip = 0;
 		float maxRange = -1;
 		char unit_str[100] = "";
