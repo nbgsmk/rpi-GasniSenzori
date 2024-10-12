@@ -184,15 +184,16 @@ bool GasSensor::getLedStatus() {
 	bool rezultat = false;
 	vector<uint8_t> reply = send(cmdRunningLightGetStatus);
 
-	int expected = cmdRunningLightGetStatus.expectedReplyLen;
-	if (reply.size() < expected) {
-		// H_STAT je vec podesen u metodu send()
+	// --------------------------------------
+	// H_STAT dolazi PODESEN iz metoda send()
+	// ako bilo sta ne valja, ovde je bezbedno da samo izadjem
+	// --------------------------------------
+	if (H_STAT != OK) {
 		return false;
 	}
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x8A);		// reply header ok?
 	if (hdr) {
-		this->H_STAT = OK;
 		rezultat = (reply.at(2) == 1) ? true : false;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
@@ -212,83 +213,95 @@ bool GasSensor::getLedStatus() {
 
 /**
  * Query parameters from sensor with _D1_ command
- * @return nothing. Instead, sensorProperties structure is silently populated
  * @struct sensorProperties will be populated for later use
+ * @return H_STAT modified locally in case of error, or passed-through from send() method (still could be error)
  */
-void GasSensor::getSensorProperties_D1(){
+GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1(){
 	//
 	// VAZNO!! Saljem COMMAND 3 = "D1". Odgovor je drugaciji nego za D7
 	// Ovaj odgovor cak nema header!
 	//
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd1);
 
-	int expected = cmdGetTypeRangeUnitDecimals0xd1.expectedReplyLen;
-	if (reply.size() < expected) {
-		// H_STAT je vec podesen u metodu send()
-		return;
-	}
-
 	if (this->DEBUG_LEVEL == -4){
 		cout << "D1:";
-		for (int i = 0; i < reply.size(); i++) {
+		for (unsigned int i = 0; i < reply.size(); i++) {
 			cout << "   0x" << setfill('0') << setw(2) << hex << static_cast<int>( reply.at(i) ) << "  " << std::dec;
 		}
 		cout << endl;
 		cout << "D1:";
-		for (int i = 0; i < reply.size(); i++) {
+		for (unsigned int i = 0; i < reply.size(); i++) {
 			std::cout << " " << std::bitset<8>(reply.at(i));
 		}
 		cout << endl;		
 	}
 
-	this->H_STAT = OK;
+	unsigned int expected = cmdGetTypeRangeUnitDecimals0xd1.expectedReplyLen;
+	if (reply.size() < expected) {
+		// H_STAT je vec podesen u metodu send()
+		// ako nema dovoljno podataka, izadji
+		return H_STAT;
+	}
+
+	// imam dovoljno bajtova. da vidim da li su dobri
+
 	sensorProperties.tip = reply.at(0);
 	sensorProperties.maxRange = (float) ( (reply.at(1) << 8) | reply.at(2) );
-	if (reply.at(3) == 0x2) {
-		strcpy(sensorProperties.unit_str, "ppm");
-	} else {
-		strcpy(sensorProperties.unit_str, "ppb");
+	switch (reply.at(3)) {
+		case 0x02:
+			strcpy(sensorProperties.unit_str, "ppm");
+			break;
+
+		case 0x04:
+			strcpy(sensorProperties.unit_str, "ppb");
+			break;
+
+		default:
+			strcpy(sensorProperties.unit_str, "D1: _?_ ");
+			break;
 	}
-	
 	sensorProperties.decimals = (int) ( ( reply.at(7) & 0b11110000 ) >> 4 );	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
 	sensorProperties.sign = (int) ( reply.at(7) & 0b00001111 );			// sign bits 3~0
-	__asm("NOP");
+
+	return H_STAT;		// propagiram H_STAT u caller metod (sta god da je vratio send()
 }
 
 
 /**
  * Query parameters from sensor with _D7_ command
- * @return nothing. Instead, sensorProperties structure is silently populated
  * @struct sensorProperties will be populated for later use
+ * @return H_STAT modified locally in case of error, or passed-through from send() method (still could be error)
  */
-void GasSensor::getSensorProperties_D7() {
+GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 	//
 	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
 	//
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
 
-	int expected = cmdGetTypeRangeUnitDecimals0xd7.expectedReplyLen;
+	if (this->DEBUG_LEVEL == -4){
+		cout << "D7:";
+		for (unsigned int i = 0; i < reply.size(); i++) {
+			cout << "   0x" << setfill('0') << setw(2) << hex << static_cast<int>( reply.at(i) ) << "  " << std::dec;
+		}
+		cout << endl;
+		cout << "D7:";
+		for (unsigned int i = 0; i < reply.size(); i++) {
+			std::cout << " " << std::bitset<8>(reply.at(i));
+		}
+		cout << endl;
+	}
+
+	unsigned int expected = cmdGetTypeRangeUnitDecimals0xd7.expectedReplyLen;
 	if (reply.size() < expected) {
 		// H_STAT je vec podesen u metodu send()
-		return;
+		// ako nema dovoljno podataka, izadji
+		return H_STAT;
 	}
+
+	// imam dovoljno bajtova. da vidim da li su dobri
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
 	if (hdr) {
-		if (this->DEBUG_LEVEL == -4){
-			cout << "D7:";
-			for (int i = 0; i < reply.size(); i++) {
-				cout << "   0x" << setfill('0') << setw(2) << hex << static_cast<int>( reply.at(i) ) << "  " << std::dec;
-			}
-			cout << endl;
-			cout << "D7:";
-			for (int i = 0; i < reply.size(); i++) {
-				std::cout << " " << std::bitset<8>(reply.at(i));
-			}
-			cout << endl;
-		}
-		
-		this->H_STAT = OK;
 		sensorProperties.tip = reply.at(2);
 		sensorProperties.maxRange = (float) ( (reply.at(3) << 8) | reply.at(4) );
 		switch (reply.at(5)) {
@@ -305,7 +318,7 @@ void GasSensor::getSensorProperties_D7() {
 				break;
 
 			default:
-				strcpy(sensorProperties.unit_str, " _?_ ");
+				strcpy(sensorProperties.unit_str, "d7: _?_ ");
 				break;
 		}
 		// originalno
@@ -330,6 +343,8 @@ void GasSensor::getSensorProperties_D7() {
 			cout << "sensor properties: wrong response header! STRONGLY suggest to discard any measurements.";
 		}
 	}
+
+	return H_STAT; 		// propagiram H_STAT u caller metod (sta god da je vratio send()
 }
 
 
@@ -350,19 +365,15 @@ std::string GasSensor::getSensorTypeStr(){
 	switch (sensorProperties.tip) {
 		case 0x19:
 			rez = "CO";
-			this->H_STAT = OK;
 			break;
 
 		case 0x1C:
 			rez = "H2S";
-			this->H_STAT = OK;
 			break;
 
 		case 0x22:
 			rez = "O2";
-			this->H_STAT = OK;
 			break;
-
 
 		default:
 			/* 
@@ -410,21 +421,20 @@ float GasSensor::getGasConcentrationPpm() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
-	int expected = cmdReadGasConcentration.expectedReplyLen;
-	if (reply.size() < expected) {
+	if (this->DEBUG_LEVEL == -4){
+		cout << "(" << getSensorTypeStr() << " raw ppm: ";		// "O2 raw ppm: 0x02, 0x1c...
+		Logger::dhex(reply);
+		cout << ")" << endl;
+	}
+
+//	unsigned int expected = cmdReadGasConcentration.expectedReplyLen;
+	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
-	if (this->DEBUG_LEVEL == -4){
-		cout << "(" << getSensorTypeStr() << " raw ppm: ";
-		Logger::dhex(reply);
-		cout << ")" << endl;		
-	}
-
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
-		this->H_STAT = OK;
 		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
 		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
 		ppm = ppm / powf(10.0, sensorProperties.decimals);
@@ -434,8 +444,8 @@ float GasSensor::getGasConcentrationPpm() {
 		rezultat = MEASUREMENT_ERROR;
 	}
 	if ( rezultat < 0 ) {
-		// ne vrecaj MEASUREMENT_ERROR jer je rezultat svejedno negativan
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
+		rezultat = MEASUREMENT_ERROR;
 	}
 	return rezultat;
 }
@@ -447,21 +457,20 @@ float GasSensor::getGasConcentrationMgM3() {
 	float rezultat = 0.0f;
 	std::vector<uint8_t> reply = send(cmdReadGasConcentration);
 
-	int expected = cmdReadGasConcentration.expectedReplyLen;
-	if (reply.size() < expected) {
+	if (this->DEBUG_LEVEL == -4){
+		cout << "(" << getSensorTypeStr() << " raw mg/m3: "; 	// "O2 raw mg/m3: 0x02, 0x1c...
+		Logger::dhex(reply);
+		cout << ")" << endl;
+	}
+
+//	unsigned int expected = cmdReadGasConcentration.expectedReplyLen;
+	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
-	if (this->DEBUG_LEVEL == -4){
-		cout << "(" << getSensorTypeStr() << " raw mg/m3: ";
-		Logger::dhex(reply);
-		cout << ")" << endl;		
-	}
-
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
-		this->H_STAT = OK;
 		float max =  (float) ( (reply.at(4) * 256) + (reply.at(5)) );
 		float mgm3 = (float) ( (reply.at(2) * 256) + (reply.at(3)) );
 		mgm3 = mgm3 / powf(10.0, sensorProperties.decimals);
@@ -471,8 +480,8 @@ float GasSensor::getGasConcentrationMgM3() {
 		rezultat = MEASUREMENT_ERROR;
 	};
 	if ( rezultat < 0 ) {
-		// nema potrebe da vracam MEASUREMENT_ERROR jer je i ovako negativno
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
+		rezultat = MEASUREMENT_ERROR;
 	}
 	return rezultat;
 }
@@ -484,21 +493,20 @@ float GasSensor::getGasPercentageOfMax() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentration);
 
-	int expected = cmdReadGasConcentration.expectedReplyLen;
-	if (reply.size() < expected) {
+	if (this->DEBUG_LEVEL == -4){
+		cout << "(" << getSensorTypeStr() << " raw %: ";	// "O2 raw %: 0x02, 0x1c...
+		Logger::dhex(reply);
+		cout << ")" << endl;
+	}
+
+//	unsigned int expected = cmdReadGasConcentration.expectedReplyLen;
+	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
-	if (this->DEBUG_LEVEL == -4){
-		cout << "(" << getSensorTypeStr() << " raw %: ";
-		Logger::dhex(reply);
-		cout << ")" << endl;		
-	}
-
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
 	if (hdr) {
-		this->H_STAT = OK;
 		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
 		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
 		// max = max / powf(10.0f, sensorProperties.decimals);		// STOPSHIP ! ni drugde nisam delio ovo sa
@@ -509,8 +517,8 @@ float GasSensor::getGasPercentageOfMax() {
 		rezultat = MEASUREMENT_ERROR;
 	}
 	if (rezultat < 0) {
-		rezultat = MEASUREMENT_ERROR;
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
+		rezultat = MEASUREMENT_ERROR;
 	}
 	return rezultat;
 }
@@ -530,15 +538,14 @@ float GasSensor::getTemperature() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 	
-	int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
-	if (reply.size() < expected) {
+//	int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
+	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return (float) MEASUREMENT_ERROR;
 	}
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		this->H_STAT = OK;
 		float temp =  (float) ( (reply.at(8) << 8)  | (reply.at(9))  );
 		float humid = (float) ( (reply.at(10) << 8) | (reply.at(11)) );
 		temp = temp / 100.0f;
@@ -558,15 +565,14 @@ float GasSensor::getRelativeHumidity() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 
-	int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
-	if (reply.size() < expected) {
+//	unsigned int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
+	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		this->H_STAT = OK;
 		float temp =  (float) ( (reply.at(8) << 8)  | (reply.at(9))  );
 		float humid = (float) ( (reply.at(10) << 8) | (reply.at(11)) );
 		temp = temp / 100.f;
@@ -576,8 +582,9 @@ float GasSensor::getRelativeHumidity() {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
 	}
-	if ( (rezultat < 0) || (rezultat > 100) ) {
+	if (rezultat < 0) {
 		this->H_STAT = MEASUREMENT_OUT_OF_RANGE;
+		rezultat = MEASUREMENT_ERROR;
 	}
 	return rezultat;
 }
@@ -635,7 +642,7 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 	for (unsigned int i = 0; i < txStruct.cmd.size(); i++) {
 		serialPutchar(this->uartHandle, txStruct.cmd[i]);
 		// At 9600 baud, the 1 bit time is ~104 microseconds, and 1 full character is 1.04mS
-		usleep(1000);	// some guard time between characters. No reason, just because.
+		usleep(500);	// some guard time between characters. No reason, just because.
 	};
 
 
@@ -645,17 +652,18 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 
 		/*
 		 * Na pocetku je buffer prazan tj serialDataAvail() == 0
-		 * pa se polako puni karakterima, kako pristizu od senzora
+		 * pa se POLAKO PUNI karakterima, kako pristizu od senzora
 		 * Zato cekam da
 		 * - available postane jednako expected
-		 * - ili istekne timeout (senzor je neispravan ili fizicki iskljucen)
+		 *  ili
+		 * - istekne timeout (senzor je neispravan ili fizicki iskljucen)
 		 */
 		while (serialDataAvail(this->uartHandle) < (int) txStruct.expectedReplyLen) {
 			usleep(1000);
 			mS++;
 			if (mS >= SENSOR_TIMEOUT_mS) {
 				// isteklo vreme!
-				// Samo break iz petlje, neka metod nastavi dalje, ako je potreban neki cleanup
+				// Samo break iz ove petlje, metod send() nastavlja dalje, ako je potreban neki cleanup
 				this->H_STAT = SENSOR_TIMEOUT;
 				if(DEBUG_LEVEL >=1){
 					cout << "ERROR!! Timeout in sensor comunication after " << mS << "mS" << endl;
@@ -663,24 +671,30 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 				break;
 			}
 		}
-		// ovde dodjemo kad je istekao timeout ili je stiglo dovoljno karaktera
 
-
+		// ovde dodjemo iskljucivo ako je:
+		// - stiglo DOVOLJNO karaktera
+		// ili
+		// - istekao timeout
 		if (mS < SENSOR_TIMEOUT_mS) {
-			// ovde smo ako nije nastupio timeout i stiglo je dovoljno bajtova
+			// stiglo je dovoljno bajtova na vreme
 			while ( serialDataAvail(this->uartHandle) > 0 ) {
 				uint8_t x = serialGetchar(this->uartHandle);
 				reply.push_back(x);
 			};
-			// stigao je odgovor, kakav-takav
+
+			// stiglo je DOVOLJNO bajtova
+			// da vidimo da li su ispravni
 
 			// podesimo error statuse
-			bool sajzOk = (reply.size() == txStruct.expectedReplyLen);		// ne diraj duplo jednako!
-			if ( ! sajzOk ) { this->H_STAT = MEASUREMENT_INCOMPLETE; };		// stiao je pogresan broj bajtova
+			// NEPOTREBNO!
+			// bool sajzOk = (reply.size() == txStruct.expectedReplyLen);		// ne diraj duplo jednako!
+			// if ( ! sajzOk ) { this->H_STAT = MEASUREMENT_INCOMPLETE; };		// stiao je pogresan broj bajtova
 
 
 			// pa sad slicno ali za console debugging
 			if (DEBUG_LEVEL >= 3) {
+				bool sajzOk = (reply.size() == txStruct.expectedReplyLen);		// ne diraj duplo jednako!
 				cout << "rcv: ";
 				if (reply.size() == 0) {
 					cout << CON_RED << "NONE!";		// nije stiglo nista! prazan vector zasluzuje crvena slova!
