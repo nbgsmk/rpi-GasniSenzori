@@ -57,6 +57,10 @@ public:
 
 	// debug only. kasnije moze da se vrati da bude privatna - TODO
 	std::vector<uint8_t> send(const CmdStruct_t txCmd);		// posalji komande senzoru, cekaj odgovor
+//	struct ReplStruct_t {
+//		std::vector<uint8_t> merenja;
+//		ErrCodes_t status;
+//	};
 
 
 private:
