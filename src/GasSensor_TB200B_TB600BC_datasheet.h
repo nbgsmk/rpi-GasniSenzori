@@ -28,7 +28,7 @@
 
 
 	///////////////////////////////////////////////////////////////
-	// (^1) UPDATE iz Lucas Schwarz email 2024-10-16 13:11
+	// (^1) verzija: UPDATE iz Lucas Schwarz email 2024-10-16 13:11
 	//
 	// Prema pdf:
 	// (prva stranica)			"TB200B Gas Sensor Module UART Interface Communication Protocol Version：V1.1 [Date：05.04.2021]"
@@ -41,10 +41,10 @@
 	//	1. Communication Mode
 	//	---------------------
 	//	Signal Voltage  3.3 
-	//	Baud Rate  9600 
-	//	Data Bit  8 bits
-	//	Stop Bit  1 bit 
-	//	Parity  None 
+	//	Baud Rate  		9600 
+	//	Data Bit  		8 bits
+	//	Stop Bit  		1 bit 
+	//	Parity  		None 
 
 
 	//	2. Sensor Type
@@ -133,8 +133,26 @@
 	//	| Concentration 1 |  ppm   |   ppb  |  %vol.  |
 	//	| Concentration 2 |  mg/m3 |  ug/m3 |  10g/m3 |
 	//	+---------------------------------------------+
-	//	1ppm=1000ppb, 1%vol.=10000ppm 
-	//	1mg/m3=1000ug/m3 
+	//	1 ppm = 1000 ppb
+	//	1% vol = 10000 ppm 
+	//	1 mg/m3 = 1000 ug/m3 
+	//
+	// TB600b/c dodatno: 
+	// -----------------
+	// The module is calibrated during production in the unit Concentration-1, while Concentration-2 is 
+	// calculated using a concentration conversion formula. 
+	// Additionally, the range is also speciﬁed in the unit of Concentration-1.
+	// The concentration conversion formulas for Concentration-1 and Concentration-2 are as follows:
+	// mg/m 3  = M/22.4*ppm*[273/(273+T)]*(Ba/101325)
+	// M: Molecular Weight
+	// T: Temperature (Celsius)
+	// Ba: Atmospheric Pressure
+	// In the internal module conversion, Ba is set to 1 standard atmosphere, 
+	// and T is set to 25 degrees Celsius. Since VOCs (volatile organic compounds) 
+	// have an unknown molecular weight, the conversion ratio 
+	// between Concentration-2 and Concentration-1 is 1:1.
+	// 
+	// prim.prev: koristicemo samo Concentration-1. 
 
 
 	// 4. Data of Type
@@ -163,13 +181,13 @@
 	// Return value (ne pise izricito u pdf-u ali valjda je to return value - prim. prev.)
 	//	0xFF	0	Fixed command header
 	//	0xD7	1	Fixed command header
-	//	0x18	2	see above the sensor type table
-	//	0x00	3	Byte[4:3] Gas Sensor Rage = (Byte[1]<<8)|Byte[2], unit here corresponds to Concentration 1 in Read-Out Measured Values table below
-	//	0xC8	4	Byte[4:3] Gas Sensor Rage = (Byte[1]<<8)|Byte[2], unit here corresponds to Concentration 1 in Read-Out Measured Values table below
-	//	0x02	5	Unit_type: Please see above the Gas Concentration type table
-	//	0x01	6	bit[7:4] number of decimal places (see Decimal Places table); bit[3:0] (see Data of Type table )
+	//	0x19	2	sensor type
+	//	0x03	3	Byte[4:3] Sensor Range (uint16) = ( Byte[3]<<8) | Byte[4] , unit here corresponds to Concentration 1 in Read-Out Measured Values table below
+	//	0xE8	4	Byte[4:3] Sensor Range (uint16) = ( Byte[3]<<8) | Byte[2] , unit here corresponds to Concentration 1 in Read-Out Measured Values table below
+	//	0x02	5	Unit_type: Unit for Concentration-2 is mg/m³, unit for Concentration-1 is ppm. See Gas Concentration type table
+	//	0x30	6	bit[7:4] number of decimal places (see Decimal Places table); bit[3:0] (see Data of Type table )
 	//	0x00	7	Reserved
-	//	0x46	8	Checksum see below
+	//	0xF3	8	Checksum see below
 	//
 	//	Checksum = (Byte[1]+Byte[2]+Byte[3]+Byte[4]+Byte[5]+Byte[6]+Byte[7])
 	//	Checksum = 0-checksum
@@ -189,9 +207,9 @@
 	const CmdStruct_t cmdReadGasConcentrationTempAndHumidity = { cmd_read_gas_concentration_temp_and_humidity, 13, true };
 	// RETURN VALUE:
 	//
-	//	byte[1:0]	Fixed command header 0xFF, 0x87
-	//	byte[3:2]	Concentration 2
-	//					Concentration = (float) ( (Byte[2]<<8)|Byte[3] )
+	//	byte[1:0]	0xFF, 0x87 Fixed command header
+	//	byte[3:2]	Concentration 2 (uint16)
+	//					Concentration2 = (float) ( (Byte[2]<<8)|Byte[3] )
 	//					Gas concentration value = Value + Decimal + Unit	-> refer to Decimal Places table
 	//					For example：
 	//					CO gas sensor, range is 0-1000ppm, Resolution is 0.1ppm(please find this information from Order Information of Sensor datasheet)
@@ -208,7 +226,7 @@
 	//					CO gas sensor, range is 0-1000ppm, Resolution is 0.1ppm(please find this information from Order Information of Sensor datasheet)
 	//					It has 1 Decimal, according this formula to calculate: Concentration = Concentration/10
 	//					Unit : mg/m3 、ug/m3、10g/m3，Please see above the Gas Concentration Unit table. 
-	//	byte[9:8]	Temperature Value，there are two decimal places. 
+	//	byte[9:8]	Temperature (int16) Value，there are two decimal places. 
 	//					Unit ℃
 	//					Temperature = (float) ( (Byte[8]<<8) | Byte[9] ) / 100
 	//	byte[11:10]	Relative Humidity, there are two decimal places 
@@ -245,7 +263,7 @@
 	const std::vector<uint8_t> read_firmware_version = {
 			0xD3
 	};
-	const CmdStruct_t readTempAndHumidity = { read_firmware_version, 6, false};
+	const CmdStruct_t readFirmwareVersion = { read_firmware_version, 6, false};
 	//	RETURN VALUE:
 	//
 	// Bukvalno pise 
@@ -253,6 +271,7 @@
 	// 软件版本号
 	//
 	// Da ne verujes hahahahaha
+	// TB600: Example: 0x20 0x23 0x11 0x08 0x14 0x54: 0x202311081454, After conversion to BCD code, 202311081454
 
 
 
@@ -349,72 +368,77 @@
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
+//
+// Odavde do kraja su samo specificnosti iz datasheet-a za TB600b&c
+//
+/////////////////////////////////////////////////////////////////////////
 
 
-
-	////////////////////////////////
-	// Transmission mode switching
-	////////////////////////////////
-
-	//	COMMAND 1
-	//	Switches to active upload
+	//////////////////////////////////////////////
+	//	4.1 Communication Mode Switching Command
+	//////////////////////////////////////////////
+	//
+	//	4.1.1 Switch to Auto Reporting Mode
 	const std::vector<uint8_t> cmd_set_active_mode = {
 			//    0      |    1   |       2        |       3       |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Switch command | Active upload | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47
 	};
 	const CmdStruct_t cmdSetActiveMode = { cmd_set_active_mode, 0, false };
+	// RETURN VALUE:
+	/////////////////////////////////////
+	//	Rx (uplink data) format (every 1s)
+	//
+	//	0xFF, 0x86	byte[0:1]	Command header
+	//	0x25, 0xBC	byte[2:3]	Concentration-2 (uint16). 0x25BC=9660 -> the result is 9.66 mg/m³. See section Query Sensor Module Parameters
+	//	0x03, 0xE8	byte[4:5]	Full Range (uint16). 0x03E8=1000 -> the result is 1000 ppm. See section Query Sensor Module Parameters
+	//	0x20, 0xD0	byte[6:7]	Concentration-1 (uint16). 0x20D0=8400 -> the result is 8.4 ppm. See section Query Sensor Module Parameters
+	//	0xBE		byte[8]		Checksum ( -(0x86+0x25+0xBC+0x03+0xE8+0x20+0xD0) ) & 0xFF = 0xBE
 
 
-
-
-
-
-	//	COMMAND 2
-	//	Switches to passive upload
+	//
+	//	4.1.2 Switch to Query Mode
 	const std::vector<uint8_t> cmd_set_passive_mode = {
 			//    0      |    1   |       2        |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Switch command | Answer | Retain | Retain | Retain | Retain | Checksum
 			     0xFF,       0x01,       0x78,         0x41,   0x00,    0x00,     0x00,    0x00,    0x46
 	};
 	const CmdStruct_t cmdSetPassiveMode = { cmd_set_passive_mode, 0, false };
+	//	RETURN VALUE:
+	//	After sending the downlink command, there will be data reply within the next 2 seconds, which means the switch is successful.
 
 
 
-	////////////////////////////////
-	// Commands in query mode
-	////////////////////////////////
 
-	//	COMMAND 3
-	//	Get the sensor type, maximum range, unit, and decimal places: 0xD1
+	//////////////////////////////////////////////
+	//	4.2 Query Sensor Module Parameters
+	//////////////////////////////////////////////
+	//
+	//	4.2.1 Query Sensor Module Parameters (Method 1)
+	// 0xD1
 	const std::vector<uint8_t> cmd_get_type_range_unit_decimals_0xD1 = {
 			0xD1
 	};
 	const CmdStruct_t cmdGetTypeRangeUnitDecimals0xd1 = { cmd_get_type_range_unit_decimals_0xD1, 9, true };
-	// Return value:	(valjda su to vredosti za primer - prim.prev)
-	//	0x18	0	Sensor type
-	//	0x00	1	Maximum range high
-	//	0xC8	2	Maximum range low
-	//	0x02	3	Unit
-	//	0x00	4	Retain
-	//	0x00	5	Retain
-	//	0x00	6	Retain
-	//	0x01	7	Number of decimal places(bit[4]~bit[7] | Data sign (bit[0]~bit[3])
-	//	0x35	8	Parity bit
+	// RETURN VALUE:
+	//	0x19			byte[0]		Sensor type (see table)
+	//	0x03, 0xE8		byte[1:2]	Full range (uint16). (see table). 0x03E8=1000 -> the result is 1000 ppm
+	//	0x02			byte[3]		Unit for  Concentration-2 is mg/m³. Unit for Concentration-1 is ppm. (see table)
+	//	0x00 0x00 0x00	byte[4:6]	Reserved
+	//	0x30			byte[7]		Decimal places: 0x30 >> 4 = 0x03 represent 3 decimal places. Divide Concentration-2 and Concentration-1 by 1000
+	//	0xE3			byte[8]		Checksum ( -(0x03+0xE8+0x02+0x00+0x00+0x00+0x30) ) & 0xFF = 0xE3
+
 	//
-	//	NOTE:
-	//	Max range = (Max range high << 8) | Max range low
-	//	Unit: 0x02 -> (ppm and mg/m3) or 0x04 (ppb and ug/m3)
-	//	Signs: 0 (positive) or 1 (negative)
-	//	Decimal places: the maximum number of decimal places is 3 (three prim. prev.)
-	//
-	//
+	//	4.2.2 Query Sensor Module Parameters (Method 2)
+	//	0xD7
+	//	Same as [4.2.1 Query Sensor Module Parameters (Method 1)], with a diﬀerent instruction format. 
+	//	Users can choose to use either method.
+	//////////////////////////////////////
+	// ISTO KAO TB200: 6.1 Command 1: 0xD7
+	//////////////////////////////////////
 
 
-
-
-	//	COMMAND 5
-	//	Actively reading the gas concentration
+	//	4.3 Query Current Gas Concentration
 	const std::vector<uint8_t> cmd_read_gas_concentration = {
 			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
 			// Start bit | Retain | Command | Retain | Retain | Retain | Retain | Retain | Checksum
@@ -423,20 +447,84 @@
 	const CmdStruct_t cmdReadGasConcentration = { cmd_read_gas_concentration, 9, true };
 	// RETURN VALUE:
 	//
-	//	0xFF	0	Start bit
-	//	0x86	1	Command
-	//	0x00	2	High gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
-	//	0x2A	3	Low gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
-	//	0x00	4	Full range high
-	//	0x00	5	Full range low
-	//	0x00	6	High gas concentration (ppm)		// STOPSHIP NOTA (1**)
-	//	0x20	7	Low gas concentration (ppm)			// STOPSHIP NOTA (1**)
-	//	0x30	8	Checksum
-	// NOTE:
-	// Checksum: Add 1 ~ 7 digits of data to generate an 8-bit data, invert each bit, add 1 at the end
-	// Gas concentration = (gas concentration high bit * 256 + gas concentration bit) / 10^x		// STOPSHIP NOTA (1**)
-	// where "x"= number of decimal places. The number of decimal places can be read by D1 or D7 command.
-	// (The high and low concentrations need to be converted from hexadecimal to decimal and then brought into this formula to calculate)
+	//	0xFF, 0x86	byte[0:1]	Fixed command header
+	//	0x25, 0xBC	byte[2:3]	Concentration-2 (uint16).	0x25BC = 9660 -> the result is 9.66 mg/m³. See 4.2 Query Sensor Module Parameters
+	//	0x03, 0xE8	byte[4:5]	Full range (uint16). 		0x03E8=1000 -> the result is 1000ppm. See 4.2 Query Sensor Module Parameters
+	//	0x20, 0xD0	byte[6:7]	Concentration-1 (uint16). 	0x20D0=8400 -> the result is 8.4 ppm. See 4.2 Query Sensor Module Parameters
+	//	0xBE		byte[8]		Checksum = ( -(0x86+0x25+0xBC+0x03+0xE8+0x20+0xD0) ) & 0xFF = 0xBE
+
+
+	// 4.4 Query Gas Concentration, Temperature and Relative Humidity
+	//
+	// ISTO KAO COMMAND 2 za TB200
+
+
+
+
+	//////////////////////////////////////////////
+	// 4.5 Query Temperature and Relative Humidity
+	// 4.6 Query Software Version
+	// 4.7 Enter and Exit Sleep Mode (ima Metod 1 i Metod 2. Za TB200 metod 2 je isti)
+	// 4.8 LED Control
+	//////////////////////////////////////////////
+	// ISTO KAO za TB200
+
+
+
+
+	/////////////////////////
+	/////////////////////////
+	// 4.9 Sensor Calibration
+	/////////////////////////
+	/////////////////////////
+	//
+	//	A harsh environment or a long-term measurement will causes the sensor signal to diminish and measurement drift. 
+	//	A baseline calibration (using zero gas, e.g. 0ppm) and a sensitivity calibration (using span gas, e.g. 10ppm) 
+	//	are suggested to guarantee the measurement precision.
+	//
+	// NEMAMO USLOVE ZA OVO. NE DIRATI
+
+
+	////////////////////////////////////////////
+	//	4.10 Restore Factory Calibration Setting
+	////////////////////////////////////////////
+	//	TODO
+	const std::vector<uint8_t> cmd_restore_factory_calibration = {
+			//    0      |    1   |    2    |    3   |   4    |   5    |    6   |    7   |    8
+			     0xFF,       0x01,    0x8E,     0x00,   0x00,    0x00,     0x00,    0x00,    0x71
+	};
+	const CmdStruct_t cmdRestoreFactoryCalibration_ONLY_TB600 = { cmd_restore_factory_calibration, 2, false };
+	// RETURN VALUE:
+	//
+	//	0xFF, 0x86	byte[0:1]	Fixed format (ascii OK)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -484,28 +572,6 @@
 
 
 
-
-
-	/////////////////////////////////
-	// DATA ACTIVE UPLOAD MODE FORMAT (zasto se ovo ponavlja kad gore vec pise?? - prim. prev.)
-	/////////////////////////////////
-	//
-	//	0xFF	0	Start bit
-	//	0x86	1	Command
-	//	0x00	2	High gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
-	//	0x2A	3	Low gas concentration (mg/m3)		// STOPSHIP NOTA (1**)
-	//	0x00	4	Full range high
-	//	0x00	5	Full range low
-	//	0x00	6	High gas concentration (ppm)		// STOPSHIP NOTA (1**)
-	//	0x20	7	Low gas concentration (ppm)			// STOPSHIP NOTA (1**)
-	//	0x30	8	Checksum
-	//
-	// NOTE:
-	// Checksum: 1 ~ 11 bits of data are added to generate an 8-bit data, each bit is inverted, and 1 is added at the end. (ocigledno misli "add 1~8 bits - prim. prev)
-	//
-	// Gas concentration = gas concentration high bit * 256 + gas concentration bit) / 10^x		// STOPSHIP NOTA (1**)
-	// where "x" = The number of decimal places; The number of decimal places can be read by D1 or D7 command
-	// (The high and low concentrations need to be converted from hexadecimal to decimal and then brought into this formula to calculate)
 
 
 
