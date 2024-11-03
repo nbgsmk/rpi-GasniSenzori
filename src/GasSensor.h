@@ -57,6 +57,10 @@ public:
 
 	// debug only. kasnije moze da se vrati da bude privatna - TODO
 	std::vector<uint8_t> send(const CmdStruct_t txCmd);		// posalji komande senzoru, cekaj odgovor
+//	struct ReplStruct_t {
+//		std::vector<uint8_t> merenja;
+//		ErrCodes_t status;
+//	};
 
 
 private:
@@ -77,16 +81,17 @@ private:
 	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
 
 	struct {
-		uint8_t tip;
-		float maxRange;
-		char unit_str[100];
-		int decimals;
-		int sign;
+		ErrCodes_t state = NOT_DEFINED;			// za sada write only ali ga kasnije ne proveravam. // TODO
+		uint8_t tip = 0;
+		float maxRange = -1;
+		char unit_str[100] = "";
+		int decimals = -1;
+		int sign = -1;
 	} sensorProperties;
 
 	// d1 i d7 daju drugaciji byte array kao odgovor
-	void getSensorProperties_D1();						// d1: popuni struct sa podacima o senzoru
-	void getSensorProperties_D7();						// d7: popuni struct sa podacima o senzoru
+	ErrCodes_t getSensorProperties_D1();						// d1: popuni struct sa podacima o senzoru
+	ErrCodes_t getSensorProperties_D7();						// d7: popuni struct sa podacima o senzoru
 	bool isChecksumValid(std::vector<uint8_t> repl);
 
 };

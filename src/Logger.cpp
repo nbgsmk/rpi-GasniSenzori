@@ -35,17 +35,17 @@ void Logger::dhex(uint32_t x){	cout << "   0x" << setfill('0') << setw(8) << hex
 
 ////////////// HEX vector
 void Logger::dhex(vector<uint8_t> v){
-    for (int i = 0; i < v.size(); i++) {
+    for (unsigned int i = 0; i < v.size(); i++) {
 		dhex(v.at(i));
 	}
 }
 void Logger::dhex(vector<uint16_t> v){
-    for (int i = 0; i < v.size(); i++) {
+    for (unsigned int i = 0; i < v.size(); i++) {
 		dhex(v.at(i));
 	}
 }
 void Logger::dhex(vector<uint32_t> v){
-    for (int i = 0; i < v.size(); i++) {
+    for (unsigned int i = 0; i < v.size(); i++) {
 		dhex(v.at(i));
 	}
 }
@@ -61,19 +61,19 @@ void Logger::dbin(uint32_t x){ std::cout << " " << bitset<32>( x ); }
 
 ////////////////// BIN vector
 void Logger::dbin(vector<uint8_t> v){
-	for (int i = 0; i < v.size(); i++) {
+	for (unsigned int i = 0; i < v.size(); i++) {
 		dbin(v.at(i));
 	}
 	cout << endl;	
 }
 void Logger::dbin(vector<uint16_t> v){
-	for (int i = 0; i < v.size(); i++) {
+	for (unsigned int i = 0; i < v.size(); i++) {
 		dbin(v.at(i));
 	}
 	cout << endl;	
 }
 void Logger::dbin(vector<uint32_t> v){
-	for (int i = 0; i < v.size(); i++) {
+	for (unsigned int i = 0; i < v.size(); i++) {
 		dbin(v.at(i));
 	}
 	cout << endl;	
