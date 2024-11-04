@@ -46,9 +46,9 @@ public:
 	std::string getSensorTypeStr();				// na osnovu HEX vracam tekstualni naziv
 	int getMaxRange();							// maksimalni raspon merenja senzora
 	int getDecimals();							// broj decimala u rezultatu
-	float getGasConcentrationPPMPPB();			// koncentracija gasa [ppm, ppb, %]
-	float getGasConcentrationMgM3_DO_NOT_USE();	// koncentracija gasa [mg/m3, ug/m3, *10g/m3
-	float getGasPercentageOfMaxPPMPPB();		// koncentracija 0~100% od maksimalnog opsega [ppm, ppb, %]
+	float getGasConcentrationParticles();		// koncentracija gasa [ppm, ppb, %]
+	float getGasConcentrationMass_DO_NOT_USE();	// koncentracija gasa [mg/m3, ug/m3, *10g/m3]
+	float getGasPercentageOfMaxParticles();		// koncentracija 0~100% od maksimalnog opsega [ppm, ppb, %]
 	float getTemperature();						// sve zajedno merimo
 	float getRelativeHumidity();				// sve zajedno merimo
 

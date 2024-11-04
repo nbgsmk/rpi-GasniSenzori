@@ -442,7 +442,7 @@ int GasSensor::getDecimals() {
 /**
  * @return current gas concentration in units of ppm, ppb, %
  */
-float GasSensor::getGasConcentrationPPMPPB() {
+float GasSensor::getGasConcentrationParticles() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
@@ -479,7 +479,7 @@ float GasSensor::getGasConcentrationPPMPPB() {
 /**
  * @return gas concentration in units of mg/m3, ug/m3, *10g/m3
  */
-float GasSensor::getGasConcentrationMgM3_DO_NOT_USE() {
+float GasSensor::getGasConcentrationMass_DO_NOT_USE() {
 	float rezultat = 0.0f;
 	std::vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
@@ -516,7 +516,7 @@ float GasSensor::getGasConcentrationMgM3_DO_NOT_USE() {
 /**
  * @return gas concentration normalized to 0 ~ 100% of max range. Unit is ppm,ppb,%
  */
-float GasSensor::getGasPercentageOfMaxPPMPPB() {
+float GasSensor::getGasPercentageOfMaxParticles() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
 	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
