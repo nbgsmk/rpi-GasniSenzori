@@ -93,17 +93,23 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	send(cmdRunningLightGetStatus);	// Nije bitan rezultat. Ako ne komunicira, dobice se timeout u send() metodu i postavice se H_STAT i ERROR_CNT
 
 
-	if (1==2){
-		if(DEBUG_LEVEL >=2){
-			cout << "init: get props via d1" << endl;
-		}
-		getSensorProperties_D1();
-	} else {
-		if(DEBUG_LEVEL >=2){
-			cout << "init: get props via d7" << endl;
-		}
-		getSensorProperties_D7();
+	const int _metod = 7;
+	switch (_metod) {
+		case 1:
+			if(DEBUG_LEVEL >=2){
+				cout << "init: get props via d1" << endl;
+			}
+			getSensorProperties_D1_DO_NOT_USE();		
+			break;
+		
+		case 7:
+			if(DEBUG_LEVEL >=2){
+				cout << "init: get props via d7" << endl;
+			}
+			getSensorProperties_D7();
+			break;
 	}
+
 	
 	if(DEBUG_LEVEL >=1){
 		int th = getSensorTypeHex();
@@ -225,7 +231,7 @@ bool GasSensor::getLedStatus() {
  * @struct sensorProperties will be populated for later use
  * @return H_STAT modified locally in case of error, or passed-through from send() method (still could be error)
  */
-GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1(){
+GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1_DO_NOT_USE(){
 	//
 	// VAZNO!! Saljem COMMAND 3 = "D1". Odgovor je drugaciji nego za D7
 	// Ovaj odgovor cak nema header!
@@ -258,20 +264,27 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1(){
 	sensorProperties.maxRange = (float) ( (reply.at(1) << 8) | reply.at(2) );
 	switch (reply.at(3)) {
 		case 0x02:
-			strcpy(sensorProperties.unit_str, "ppm");
+			strcpy(sensorProperties.unit_str_D1_concentration_1, "ppm");
 			break;
 
 		case 0x04:
-			strcpy(sensorProperties.unit_str, "ppb");
+			strcpy(sensorProperties.unit_str_D1_concentration_1, "ppb");
+			break;
+
+		case 0x08:
+			strcpy(sensorProperties.unit_str_D1_concentration_1, "%");
 			break;
 
 		default:
 			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
-			strcpy(sensorProperties.unit_str, "d1: _?_ ");
+			strcpy(sensorProperties.unit_str_D1_concentration_1, "d1:_?_unit_");
 			break;
 	}
 	sensorProperties.decimals = (int) ( ( reply.at(7) & 0b11110000 ) >> 4 );	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
-	sensorProperties.sign = (int) ( reply.at(7) & 0b00001111 );					// sign bits 3~0
+	// TB600 datasheet ne pominje sign!?
+	// sensorProperties.sign = (int) ( reply.at(7) & 0b00001111 );					// sign bits 3~0
+	// Pretpostavicu da je pozitivno!? Ne mogu da mnozim sa praznim.
+	sensorProperties.sign = (int)+1;
 
 	sensorProperties.state = this->H_STAT;
 	return H_STAT;		// propagiram H_STAT u caller metod (sta god da je vratio send())
@@ -329,7 +342,7 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 
 			default:
 				this->H_STAT = UNEXPECTED_SENSOR_TYPE;
-				strcpy(sensorProperties.unit_str_D7_concentration_1, "d7: _?_ ");
+				strcpy(sensorProperties.unit_str_D7_concentration_1, "d7:_?_unit_");
 				break;
 		}
 		uint8_t dec = reply.at(6) & 0b11110000;		// decimal placess: bit 7~4
