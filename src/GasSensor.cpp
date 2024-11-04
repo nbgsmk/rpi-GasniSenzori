@@ -233,7 +233,8 @@ bool GasSensor::getLedStatus() {
  */
 GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1_DO_NOT_USE(){
 	//
-	// VAZNO!! Saljem COMMAND 3 = "D1". Odgovor je drugaciji nego za D7
+	// VAZNO!! COMMAND = "D1". Odgovor je drugaciji nego za D7.
+	// VAZNO VAZNO!! Ovo se pominje SAMO u datasheetu TB600. Necemo ga koristiti jer nije jasno da li se vazi i za TB200.
 	// Ovaj odgovor cak nema header!
 	//
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd1);
@@ -264,20 +265,24 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1_DO_NOT_USE(){
 	sensorProperties.maxRange = (float) ( (reply.at(1) << 8) | reply.at(2) );
 	switch (reply.at(3)) {
 		case 0x02:
-			strcpy(sensorProperties.unit_str_D1_concentration_1, "ppm");
+			strcpy(sensorProperties.unit_str_D7_concentration_1, "ppm");
+			strcpy(sensorProperties.unit_str_D7_concentration_2, "mg/m3");
 			break;
 
 		case 0x04:
-			strcpy(sensorProperties.unit_str_D1_concentration_1, "ppb");
+			strcpy(sensorProperties.unit_str_D7_concentration_1, "ppb");
+			strcpy(sensorProperties.unit_str_D7_concentration_2, "ug/m3");
 			break;
 
 		case 0x08:
-			strcpy(sensorProperties.unit_str_D1_concentration_1, "%");
+			strcpy(sensorProperties.unit_str_D7_concentration_1, "%");
+			strcpy(sensorProperties.unit_str_D7_concentration_1, "*10g/m3");
 			break;
 
 		default:
 			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
-			strcpy(sensorProperties.unit_str_D1_concentration_1, "d1:_?_unit_");
+			strcpy(sensorProperties.unit_str_D7_concentration_1, "d1:_?_unit_");
+			strcpy(sensorProperties.unit_str_D7_concentration_2, "d1:_?_unit_");
 			break;
 	}
 	sensorProperties.decimals = (int) ( ( reply.at(7) & 0b11110000 ) >> 4 );	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
@@ -298,7 +303,7 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1_DO_NOT_USE(){
  */
 GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 	//
-	// VAZNO!! Saljem COMMAND 4 = "D7". Odgovor je drugaciji nego za D1
+	// VAZNO!! Saljem COMMAND 1 = "D7". Odgovor je drugaciji nego za D1
 	//
 	std::vector<uint8_t> reply = send(cmdGetTypeRangeUnitDecimals0xd7);
 
@@ -330,19 +335,23 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 		switch (reply.at(5)) {
 			case 0x02:
 				strcpy(sensorProperties.unit_str_D7_concentration_1, "ppm");
+				strcpy(sensorProperties.unit_str_D7_concentration_2, "mg/m3");
 				break;
 
 			case 0x04:
 				strcpy(sensorProperties.unit_str_D7_concentration_1, "ppb");
+				strcpy(sensorProperties.unit_str_D7_concentration_2, "ug/m3");
 				break;
 
 			case 0x08:
 				strcpy(sensorProperties.unit_str_D7_concentration_1, "%");
+				strcpy(sensorProperties.unit_str_D7_concentration_2, "*10g/m3");
 				break;
 
 			default:
 				this->H_STAT = UNEXPECTED_SENSOR_TYPE;
 				strcpy(sensorProperties.unit_str_D7_concentration_1, "d7:_?_unit_");
+				strcpy(sensorProperties.unit_str_D7_concentration_2, "d7:_?_unit_");
 				break;
 		}
 		uint8_t dec = reply.at(6) & 0b11110000;		// decimal placess: bit 7~4
@@ -431,29 +440,30 @@ int GasSensor::getDecimals() {
 
 
 /**
- * @return current gas concentration in ppm
+ * @return current gas concentration in units of ppm, ppb, %
  */
-float GasSensor::getGasConcentrationPpm() {
+float GasSensor::getGasConcentrationPPMPPB() {
 	float rezultat = 0.0f;
-	vector<uint8_t> reply = send(cmdReadGasConcentration);
+	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
 
 	if (this->DEBUG_LEVEL == -4){
-		cout << "(" << getSensorTypeStr() << " raw ppm: ";		// "O2 raw ppm: 0x02, 0x1c...
+		cout << "(" << getSensorTypeStr() << " raw measurement[hex]: ";		// "O2 raw ppm: 0x02, 0x1c...
 		Logger::dhex(reply);
 		cout << ")" << endl;
 	}
 
-//	unsigned int expected = cmdReadGasConcentration.expectedReplyLen;
 	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
-	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
-		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
+		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );
+		float ppm = (float) ( (reply.at(6) << 8) + (reply.at(7)) );	// bit[7:6]=Concentration 1 ppm, ppb... se pominje u oba datasheeta
 		ppm = ppm / powf(10.0, sensorProperties.decimals);
+		ppm = ppm * sensorProperties.sign;
 		rezultat = ppm;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
@@ -467,29 +477,30 @@ float GasSensor::getGasConcentrationPpm() {
 }
 
 /**
- * @return gas concentration in mg/m3
+ * @return gas concentration in units of mg/m3, ug/m3, *10g/m3
  */
-float GasSensor::getGasConcentrationMgM3() {
+float GasSensor::getGasConcentrationMgM3_DO_NOT_USE() {
 	float rezultat = 0.0f;
-	std::vector<uint8_t> reply = send(cmdReadGasConcentration);
+	std::vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
 
 	if (this->DEBUG_LEVEL == -4){
-		cout << "(" << getSensorTypeStr() << " raw mg/m3: "; 	// "O2 raw mg/m3: 0x02, 0x1c...
+		cout << "(" << getSensorTypeStr() << " raw measurement[hex]: "; 	// "O2 raw mg/m3: 0x02, 0x1c...
 		Logger::dhex(reply);
 		cout << ")" << endl;
 	}
 
-//	unsigned int expected = cmdReadGasConcentration.expectedReplyLen;
 	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
-	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float max =  (float) ( (reply.at(4) * 256) + (reply.at(5)) );
-		float mgm3 = (float) ( (reply.at(2) * 256) + (reply.at(3)) );
+		// float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );	// NE!!! Max range se odnosi samo na ppm, ppb...
+		float mgm3 = (float) ( (reply.at(2) << 8) | (reply.at(3)) );	// bit[7:6]=Concentration 2 mg/m3, ug/m3... se pominje samo u TB600
 		mgm3 = mgm3 / powf(10.0, sensorProperties.decimals);
+		mgm3 = mgm3 * sensorProperties.sign;
 		rezultat = mgm3;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
@@ -503,31 +514,30 @@ float GasSensor::getGasConcentrationMgM3() {
 }
 
 /**
- * @return gas concentration normalized to 0 ~ 100% of max measurement range
+ * @return gas concentration normalized to 0 ~ 100% of max range. Unit is ppm,ppb,%
  */
-float GasSensor::getGasPercentageOfMax() {
+float GasSensor::getGasPercentageOfMaxPPMPPB() {
 	float rezultat = 0.0f;
-	vector<uint8_t> reply = send(cmdReadGasConcentration);
+	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
 
 	if (this->DEBUG_LEVEL == -4){
-		cout << "(" << getSensorTypeStr() << " raw %: ";	// "O2 raw %: 0x02, 0x1c...
+		cout << "(" << getSensorTypeStr() << " raw measurement[hex]: ";	// "O2 raw %: 0x02, 0x1c...
 		Logger::dhex(reply);
 		cout << ")" << endl;
 	}
 
-//	unsigned int expected = cmdReadGasConcentration.expectedReplyLen;
 	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
 	}
 
-	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x86);		// reply header ok?
+	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float max = (float) ( (reply.at(4) * 256) + (reply.at(5)) );
-		float ppm = (float) ( (reply.at(6) * 256) + (reply.at(7)) );
-		// max = max / powf(10.0f, sensorProperties.decimals);		// STOPSHIP ! ni drugde nisam delio ovo sa
+		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );
+		float ppm = (float) ( (reply.at(6) << 8) | (reply.at(7)) );
 		ppm = ppm / powf(10.0f, sensorProperties.decimals);
-		rezultat = (ppm / max) * 100;
+		rezultat = (ppm / max) * 100.0f;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;
@@ -548,13 +558,13 @@ float GasSensor::getGasPercentageOfMax() {
 
 
 /**
- * @return temperature from combined reading (datasheet Command 6)
+ * @return temperature from combined reading (datasheet Command 2)
  */
 float GasSensor::getTemperature() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
-	
-//	int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
+	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
+
 	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return (float) MEASUREMENT_ERROR;
@@ -580,8 +590,8 @@ float GasSensor::getTemperature() {
 float GasSensor::getRelativeHumidity() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
+	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
 
-//	unsigned int expected = cmdReadGasConcentrationTempAndHumidity.expectedReplyLen;
 	if (OK != H_STAT) {
 		// H_STAT je vec podesen u metodu send()
 		return MEASUREMENT_ERROR;
@@ -827,7 +837,7 @@ bool GasSensor::isChecksumValid(std::vector<uint8_t> repl) {
 
 
 /**
- * @return najskoriji error kod
+ * @return poslednji zabelezeni error code. Mozda ne mora da potice od poslednjeg obavljenog merenja?
  */
 GasSensor::ErrCodes_t GasSensor::getErrorCode(){
 	return H_STAT;

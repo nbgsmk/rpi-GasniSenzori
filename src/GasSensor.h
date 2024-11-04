@@ -46,9 +46,9 @@ public:
 	std::string getSensorTypeStr();				// na osnovu HEX vracam tekstualni naziv
 	int getMaxRange();							// maksimalni raspon merenja senzora
 	int getDecimals();							// broj decimala u rezultatu
-	float getGasConcentrationPpm();				// koncentracija gasa ppm
-	float getGasConcentrationMgM3();			// koncentracija gasa ug/m3
-	float getGasPercentageOfMax();				// koncentracija 0~100% od maksimalnog merenja senzora
+	float getGasConcentrationPPMPPB();			// koncentracija gasa [ppm, ppb, %]
+	float getGasConcentrationMgM3_DO_NOT_USE();	// koncentracija gasa [mg/m3, ug/m3, *10g/m3
+	float getGasPercentageOfMaxPPMPPB();		// koncentracija 0~100% od maksimalnog opsega [ppm, ppb, %]
 	float getTemperature();						// sve zajedno merimo
 	float getRelativeHumidity();				// sve zajedno merimo
 
@@ -73,26 +73,26 @@ private:
 	bool runningLed;
 	int uartHandle;
 	bool checksumValidatorIsActive = true;
-	void setChecksumValidatorState(bool state);	// proverava se checksum rezultata ili se ignorise
+	void setChecksumValidatorState(bool state);			// proverava se checksum rezultata ili se ignorise
 
-	const unsigned int SENSOR_INIT_mS = 1000;		// minimalno vreme da se stabilizuje nakon power-on. Makar da LED pocne da trepce :-)
-	const unsigned int SENSOR_TIMEOUT_mS = 1000;	// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako ne odgovori za celu sekundu, nesto debelo ne valja!
+	const unsigned int SENSOR_INIT_mS = 1000;			// minimalno vreme da se stabilizuje nakon power-on. Makar da LED pocne da trepce :-)
+	const unsigned int SENSOR_TIMEOUT_mS = 1000;		// TB600-CO-100 prosecan odgovor je oko 40..max 45mS. Ako ne odgovori za celu sekundu, nesto debelo ne valja!
 
-	void init(uint32_t waitSensorStartup_mS);	// inicijalizuj senzor, podesi passive mode, proveri tip
+	void init(uint32_t waitSensorStartup_mS);			// inicijalizuj senzor, podesi passive mode, proveri tip
 
 	struct {
-		ErrCodes_t state = NOT_DEFINED;			// za sada write only ali ga kasnije ne proveravam. // TODO
+		ErrCodes_t state = NOT_DEFINED;					// za sada write only ali ga kasnije ne proveravam. // TODO
 		uint8_t tip = 0;
 		float maxRange = -1;
-		char unit_str_D1_concentration_2[100] = "";
-		char unit_str_D7_concentration_1[100] = "";
+		char unit_str_D7_concentration_1[50] = "";
+		char unit_str_D7_concentration_2[50] = "";
 		int decimals = -1;
 		int sign = -1;
 	} sensorProperties;
 
 	// d1 i d7 daju drugaciji byte array kao odgovor
-	ErrCodes_t getSensorProperties_D1();						// d1: popuni struct sa podacima o senzoru
-	ErrCodes_t getSensorProperties_D7();						// d7: popuni struct sa podacima o senzoru
+	ErrCodes_t getSensorProperties_D1_DO_NOT_USE();		// d1: popuni struct sa podacima o senzoru
+	ErrCodes_t getSensorProperties_D7();				// d7: popuni struct sa podacima o senzoru
 	bool isChecksumValid(std::vector<uint8_t> repl);
 
 };
