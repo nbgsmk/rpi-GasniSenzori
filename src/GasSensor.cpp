@@ -93,7 +93,7 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	send(cmdRunningLightGetStatus);	// Nije bitan rezultat. Ako ne komunicira, dobice se timeout u send() metodu i postavice se H_STAT i ERROR_CNT
 
 
-	if (1==1){
+	if (1==2){
 		if(DEBUG_LEVEL >=2){
 			cout << "init: get props via d1" << endl;
 		}
@@ -114,15 +114,13 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	if(DEBUG_LEVEL >=2){
 		cout << "init: set passive" << endl;
 	}
-	send(cmdSetPassiveMode);
+	setPassiveMode();
+
 
 	if(DEBUG_LEVEL >=2){
 		cout << "init: set running light ON" << endl;
 	}
-	send(cmdRunningLightOn);
-
-	// send(cmdSetActiveMode);
-	// send(cmdRunningLightOn);
+	setLedOn();
 
 	if(DEBUG_LEVEL >=1){
 		if(H_STAT == OK) {
@@ -143,6 +141,10 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
  */
 void GasSensor::setActiveMode() {
 	send(cmdSetActiveMode);
+
+	//
+	// usleep(1000 * 2500);	// vidi ispod: setPassiveModeAndWaitInit()
+							// Za svaki slucaj, cekam i ovde 2.5 sekunde.
 }
 
 /**
@@ -150,6 +152,13 @@ void GasSensor::setActiveMode() {
  */
 void GasSensor::setPassiveMode() {
 	send(cmdSetPassiveMode);
+
+	// Nije jasno ovo ispod ali do sada nikad nije pravilo probleme. 
+	// usleep(1000 * 2500);	// (^1) 4.1.2 Switch to Query Mode: nije bas jasna njihova recenica na engleskom.
+							// Da li hoce da kaze da odgovor stize u okviru 2 sekunde ili da sledeci odgovor dolazi tek nakon 2 sekunde?
+							// "there will be data reply within..." kakav data reply kad se ovim aktivira pasivni mod? Ne ocekuje se nikakav reply.
+							// Sta god znacilo, dobijao sam timeout na sledecoj komandi nakon slanja ove komande.
+							// Zato, za svaki slucaj, cekam 2.5 Sec
 }
 
 
@@ -664,12 +673,27 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 		while (serialDataAvail(this->uartHandle) < (int) txStruct.expectedReplyLen) {
 			usleep(1000);
 			mS++;
+
+			if ( (DEBUG_LEVEL >= 3) && (mS > (SENSOR_TIMEOUT_mS-5) ) ){
+				cout << "avail sofar: " << serialDataAvail(this->uartHandle) << ", expect:" << txStruct.expectedReplyLen << ", (int)expect:" << txStruct.expectedReplyLen << endl;
+			}
 			if (mS >= SENSOR_TIMEOUT_mS) {
 				// isteklo vreme!
 				// Samo break iz ove petlje, metod send() nastavlja dalje, ako je potreban neki cleanup
 				this->H_STAT = SENSOR_TIMEOUT;
+				reply.clear();
 				if(DEBUG_LEVEL >=1){
 					cout << "ERROR!! Timeout in sensor comunication after " << mS << "mS" << endl;
+				}
+				if (DEBUG_LEVEL >= 3){
+					std::vector<uint8_t> garbage;
+					garbage.clear(); 
+					while ( serialDataAvail(this->uartHandle) > 0 ) {
+						uint8_t x = serialGetchar(this->uartHandle);
+						garbage.push_back(x);
+					};
+					cout << "received garbage until timeout: " << endl;
+					Logger::dhex(garbage);
 				}
 				break;
 			}
@@ -726,14 +750,18 @@ std::vector<uint8_t> GasSensor::send(const CmdStruct_t txStruct) {
 			}
 
 		}
-
 	}
 
 	if (H_STAT != OK){
 		ERROR_CNT++;
 	}
 
-	serialFlush(this->uartHandle);
+	//
+	// FULL FREEZE!! NE FLUSHUJ RECEIVER OVDE!! Ako je expected reply bytes = 0, 
+	// posle ovoga sledeca komanda ne vraca nista, nema bajtova, nema odgovora!!
+	// JEDVA sam ga pronasao!
+	//
+
 	return reply;
 }
 
