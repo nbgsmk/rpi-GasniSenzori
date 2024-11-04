@@ -84,7 +84,8 @@ private:
 		ErrCodes_t state = NOT_DEFINED;			// za sada write only ali ga kasnije ne proveravam. // TODO
 		uint8_t tip = 0;
 		float maxRange = -1;
-		char unit_str[100] = "";
+		char unit_str_D1_concentration_2[100] = "";
+		char unit_str_D7_concentration_1[100] = "";
 		int decimals = -1;
 		int sign = -1;
 	} sensorProperties;

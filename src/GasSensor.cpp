@@ -316,37 +316,28 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 		sensorProperties.maxRange = (float) ( (reply.at(3) << 8) | reply.at(4) );
 		switch (reply.at(5)) {
 			case 0x02:
-				strcpy(sensorProperties.unit_str, "mg/m3 and ppm");
+				strcpy(sensorProperties.unit_str_D7_concentration_1, "ppm");
 				break;
 
 			case 0x04:
-				strcpy(sensorProperties.unit_str, "ug/m3 and ppb");
+				strcpy(sensorProperties.unit_str_D7_concentration_1, "ppb");
 				break;
 
 			case 0x08:
-				strcpy(sensorProperties.unit_str, "10g/m3 and %");
+				strcpy(sensorProperties.unit_str_D7_concentration_1, "%");
 				break;
 
 			default:
 				this->H_STAT = UNEXPECTED_SENSOR_TYPE;
-				strcpy(sensorProperties.unit_str, "d7: _?_ ");
+				strcpy(sensorProperties.unit_str_D7_concentration_1, "d7: _?_ ");
 				break;
 		}
-		// originalno
-		uint8_t dec = reply.at(6) & 0b11110000;	// decimal placess: bit 7~4
-		uint8_t sgn = reply.at(6) & 0b00001111;	// sign: bits 3~0
-		uint8_t decimals = ((dec & 0b10000000) << 3) | ((dec & 0b01000000) << 2) | ((dec & 0b00100000) << 1) | (dec & 0b00010000);
-		uint8_t sign =     ((sgn & 0b00001000) << 3) | ((sgn & 0b00000100) << 2) | ((sgn & 0b00000010) << 1) | (sgn & 0b00000001);
-		sensorProperties.decimals = (int) decimals;		// dobije se 4. Jel' moguce da je tolika tacnost?
-		sensorProperties.sign = (int) sign;				// dobije se 0 = "negative inhibition". Koji li im djavo to znaci??
+		uint8_t dec = reply.at(6) & 0b11110000;		// decimal placess: bit 7~4
+		sensorProperties.decimals = (int)(dec>>4);	// shift to lsb
 
-		// a da probamo i...
-		int dec_shR = ((dec & 0b10000000) >> 3) | ((dec & 0b01000000) >> 2) | ((dec & 0b00100000) >> 1) | (dec & 0b00010000);
-		dec = dec >> 4;							// spustim ih skroz na desno
-		int dec_nj_shL = ((dec & 0b1000) << 3) | ((dec & 0b0100) << 2) | ((dec & 0b0010) << 1) | (dec & 0b0001);
-		int dec_mshR = ((dec & 0b1000) >> 3) | ((dec & 0b0100) >> 2) | ((dec & 0b0010) >> 1) | (dec & 0b0001);
-		
-		sensorProperties.decimals = 2;		// STOPSHIP!! Jedino ovo ima smisla ali cekam odgovor od ECSENSE
+		uint8_t sgn = reply.at(6) & 0b00001111;					// sign: bits 3~0
+		sensorProperties.sign = (int) (sgn==0) ? (+1) : (-1);	// 0=>positive, 1=>negative
+
 		__asm("NOP");
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;		// silently report
