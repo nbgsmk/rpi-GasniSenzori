@@ -70,6 +70,22 @@ rx (13) chars
 
 
 
+-------------- novi datasheet --------------
 
-
+----- talk to O2 -----
+mux will be 3
+toggle sensor running led a few times, just to know we are here
+led should be on
+led should be off
+led should be on
+sensor tip hex 22
+sensor tip str O2
+---- measurements ----
+br decimala 2
+gas particles 20.9 %
+gas vol. 271.7 *10g/m3
+gas percentage of max scale 83.6
+temperature 25.59 C 
+humidity 38.22 % 
+----  done  ----
 

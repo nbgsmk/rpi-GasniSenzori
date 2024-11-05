@@ -95,7 +95,7 @@ int main() {
 	GasSensor *o2 = new GasSensor(adr_O2, uartFileDescriptor, 0);
 	cout << "app: na primer neispravan senzor " << endl;
 	GasSensor *nepostojeci = new GasSensor(adr_itd, uartFileDescriptor, 0);
-	cout << "app: ne sme da se vidi nista osim tagova (\'app: co-100\'...). Mora biti silent cak i ako ima gresaka" << endl;
+	cout << "app: osim tagova (\'app: co-100\'...), mora biti silent cak i ako ima gresaka" << endl;
 	cout << "app: sensors created" << endl;
 	cout << endl;
 	
@@ -118,7 +118,7 @@ int main() {
 		 * blok 9 = unosim greske u uart vezu i prikazujem sta se desava
 		 */
 
-		int blok = 1;
+		int blok = 9;
 		cout << endl;
 		cout << "-----------" << endl;
 		cout << "TEST BLOK " << blok << endl;
@@ -162,13 +162,13 @@ int main() {
 					int dec = co->getDecimals();
 					cout << "br decimala " << dec << endl;
 
-					auto ppm = co->getGasConcentrationPPMPPB();
-					cout << "gas ppm " << ppm << endl;
+					auto ppm = co->getGasConcentrationParticles();
+					cout << "gas particles " << co->getGasConcentrationParticles() << " " << co->getUnitsForParticles() << endl;
 
-					auto mg = co->getGasConcentrationMgM3_DO_NOT_USE();
-					cout << "gas mg/m3 " << mg << endl;
+					auto mg = co->getGasConcentrationMass_DO_NOT_USE();
+					cout << "gas vol. " << co->getGasConcentrationMass_DO_NOT_USE() << " " << co->getUnitsForMass() << endl;
 
-					auto percOfMax = co->getGasPercentageOfMaxPPMPPB();
+					auto percOfMax = co->getGasPercentageOfMaxParticles();
 					cout << "gas percentage of max scale " << percOfMax << endl;
 
 					auto celsius = co->getTemperature();
@@ -179,7 +179,7 @@ int main() {
 
 					cout << "----  done  ----\n" << endl;
 					cout << endl;
-					usleep(5000 * 1000);
+					usleep(7000 * 1000);
 
 
 					///////////////////////////
@@ -213,13 +213,13 @@ int main() {
 					dec = h2s->getDecimals();
 					cout << "br decimala " << dec << endl;
 
-					ppm = h2s->getGasConcentrationPPMPPB();
-					cout << "gas ppm " << ppm << endl;
+					ppm = h2s->getGasConcentrationParticles();
+					cout << "gas particles " << h2s->getGasConcentrationParticles() << " " << h2s->getUnitsForParticles() << endl;
 
-					mg = h2s->getGasConcentrationMgM3_DO_NOT_USE();
-					cout << "gas mg/m3 " << mg << endl;
+					mg = h2s->getGasConcentrationMass_DO_NOT_USE();
+					cout << "gas vol. " << h2s->getGasConcentrationMass_DO_NOT_USE() << " " << h2s->getUnitsForMass() << endl;
 
-					percOfMax = h2s->getGasPercentageOfMaxPPMPPB();
+					percOfMax = h2s->getGasPercentageOfMaxParticles();
 					cout << "gas percentage of max scale " << percOfMax << endl;
 
 					celsius = h2s->getTemperature();
@@ -230,7 +230,7 @@ int main() {
 
 					cout << "----  done  ----\n" << endl;
 					cout << endl;
-					usleep(5000 * 1000);
+					usleep(7000 * 1000);
 
 
 
@@ -265,13 +265,13 @@ int main() {
 					dec = o2->getDecimals();
 					cout << "br decimala " << dec << endl;
 
-					ppm = o2->getGasConcentrationPPMPPB();
-					cout << "gas ppm " << ppm << endl;
+					ppm = o2->getGasConcentrationParticles();
+					cout << "gas particles " << o2->getGasConcentrationParticles() << " " << o2->getUnitsForParticles() << endl;
 
-					mg = o2->getGasConcentrationMgM3_DO_NOT_USE();
-					cout << "gas mg/m3 " << mg << endl;
+					mg = o2->getGasConcentrationMass_DO_NOT_USE();
+					cout << "gas vol. " << o2->getGasConcentrationMass_DO_NOT_USE() << " " << o2->getUnitsForMass() << endl;
 
-					percOfMax = o2->getGasPercentageOfMaxPPMPPB();
+					percOfMax = o2->getGasPercentageOfMaxParticles();
 					cout << "gas percentage of max scale " << percOfMax << endl;
 
 					celsius = o2->getTemperature();
@@ -282,7 +282,7 @@ int main() {
 
 					cout << "----  done  ----\n" << endl;
 					cout << endl;
-					usleep(5000 * 1000);
+					usleep(7000 * 1000);
 				}
 				break;
 			}
@@ -293,24 +293,9 @@ int main() {
 			case 2: {
 				//////////////////////////////////////////
 				//////////////////////////////////////////
-				cout << "command seq" << endl;
 				int lev = 4;
 				cout << "debug=" << lev << endl;
-				for ( ; ; ) {
-					cout << "create" << endl;
-					GasSensor *gs2 = new GasSensor(adr_CO, uartFileDescriptor, lev);
-					cout << "led" << endl;
-					gs2->setLedOff();
-					usleep(1000 * 5000);
-					// co->setLedOn();
-					// usleep(1000 * 500);
-					cout << "...mala pauza..." << endl;
-				}
-				//////////////////////////////////////////
-				//////////////////////////////////////////
-
-
-
+				co->setDebugLevel(lev);
 				cout << "send raw bytes to sensor" << endl;
 				cout << "------------------------" << endl;
 				for (;;) {
@@ -319,7 +304,7 @@ int main() {
 					// char s[] = { 0xFF,       0x01,       0x78,            0x40,       0x00,    0x00,     0x00,    0x00,    0x47};
 
 					co->sendRawBytes(s, sizeof(s));
-					usleep(1000 * 1000);
+					usleep(1000 * 5000);
 				}
 				break;
 			}
@@ -329,15 +314,16 @@ int main() {
 			///////////////////////
 			case 3: {
 				cout << "sensor response time" << endl;
-				cout << "testiram samo getPpm.. i getTip.." << endl;
+				cout << "testiram samo jednu komandu" << endl;
 				cout << "---------------------------------" << endl;
 				cout << "neophodan je debug level >=2" << endl;
-				GasSensor *xr = new GasSensor(adr_O2, uartFileDescriptor, 2);
+				GasSensor *xr = new GasSensor(adr_H2S, uartFileDescriptor, 2);
 
 				for (;;) {
 					cout << "get typ " << xr->getSensorTypeStr() << endl;
-					float ppmf = xr->getGasConcentrationPPMPPB();
-					cout << "get ppm=" << ppmf << endl;
+					float pp = xr->getGasConcentrationParticles();		// ovo prijavljuje svoj response time
+					string uu = xr->getUnitsForParticles();				// ovo samo cita ranije popunjen properties, ne oduzima nikakvo vreme u runtime
+					cout << "get parts=" << pp << uu << endl;
 					usleep(1000 * 5000);
 				}
 				break;
@@ -391,20 +377,17 @@ int main() {
 					cout << "-------------- self-aware -------------" << endl;
 					cout << "--- ko je na ovoj adresi i sta meri ---" << endl;
 					cout << "---------------------------------------" << endl;
-					cout << "Ja sam " << sa->getSensorTypeStr() << ", na adresi " << sa->getMuxAddress() << ", merim " << sa->getGasConcentrationPPMPPB() << " ppm, temperatura je " << sa->getTemperature() << endl;
-					cout << "Ja sam " << sb->getSensorTypeStr() << ", na adresi " << sb->getMuxAddress() << ", merim " << sb->getGasConcentrationPPMPPB() << " ppm, temperatura je " << sb->getTemperature() << endl;
-					cout << "Ja sam " << sc->getSensorTypeStr() << ", na adresi " << sc->getMuxAddress() << ", merim " << sc->getGasConcentrationPPMPPB() << " ppm, temperatura je " << sc->getTemperature() << endl;
-					cout << endl;
-
-					cout << "-------- ukratko --------" << endl;
-					cout << "senzor " << sa->getSensorTypeStr() << ", ppm=" << sa->getGasConcentrationPPMPPB() << endl;
-					cout << "senzor " << sb->getSensorTypeStr() << ", ppm=" << sb->getGasConcentrationPPMPPB() << endl;
-					cout << "senzor " << sc->getSensorTypeStr() << ", ppm=" << sc->getGasConcentrationPPMPPB() << endl;
+					cout << "Ja sam " << sa->getSensorTypeStr() << " , na adresi " << sa->getMuxAddress() << ", merim " << sa->getGasConcentrationParticles() << " " << sa->getUnitsForParticles() << ", T=" << sa->getTemperature() << "°C, rh=" << sa->getRelativeHumidity() << "%" << endl;
+					cout << "Ja sam " << sb->getSensorTypeStr() << ", na adresi " << sb->getMuxAddress() << ", merim " << sb->getGasConcentrationParticles() << " " << sb->getUnitsForParticles() << ", T=" << sb->getTemperature() << "°C, rh=" << sb->getRelativeHumidity() << "%" << endl;
+					cout << "Ja sam " << sc->getSensorTypeStr() << " , na adresi " << sc->getMuxAddress() << ", merim  " << sc->getGasConcentrationParticles() << " " << sc->getUnitsForParticles() << ", T=" << sc->getTemperature() << "°C, rh=" << sc->getRelativeHumidity() << "%" << endl;
 					cout << endl;
 
 					cout << "senzor na nepostojecoj adresi 2 ?" << endl;
-					GasSensor *gx = new GasSensor(8, uartFileDescriptor);
-					cout << "nepostojeci meri " << gx->getGasConcentrationPPMPPB() << endl;
+					GasSensor *nep = new GasSensor(8, uartFileDescriptor);
+					cout << "nepostojeci particles   " << nep->getGasConcentrationParticles() << endl;
+					cout << "nepostojeci mass        " << nep->getGasConcentrationMass_DO_NOT_USE() << endl;
+					cout << "nepostojeci temperatura " << nep->getTemperature() << endl;
+					cout << "nepostojeci humidity    " << nep->getRelativeHumidity() << endl;
 					cout << "------------------- toliko -------------------" << endl;
 
 					usleep(1000 * 3000);
@@ -439,15 +422,16 @@ int main() {
 			/////////////////////////////////////////
 			case 7: {
 				for ( ; ; ) {
-					cout << "----- kreiram senzor -----" << endl;
+					cout << "----- DEBUG_LEVEL + senzor ispravan -----" << endl;
+					cout << "------------ kreiram senzor -------------" << endl;
 					cout << "DEBUG_LEVEL 0 => silent, ne sme prijaviti NISTA sto ga nisam pitao" << endl;
 					GasSensor *gs7 = new GasSensor(adr_H2S, uartFileDescriptor, 0);
 					cout << "saljem razne komande" << endl;
-					gs7->setDebugLevel(3);
+					gs7->setDebugLevel(0);
 					gs7->getDebugLevel();
 					gs7->getLedStatus();
 					gs7->getSensorTypeStr();
-					gs7->getGasConcentrationPPMPPB();
+					gs7->getGasConcentrationParticles();
 					cout << "nadam se da je bila tisina" << endl;
 					cout << "a sad mi se predstavi: ja sam " << gs7->getSensorTypeStr() << " na adresi " << gs7->getMuxAddress() << endl;
 					cout << "zatim reci error code " << gs7->getErrorCode() << endl;
@@ -459,7 +443,7 @@ int main() {
 					cout << "debug level je " << gs7->getDebugLevel() << endl;
 					cout << "get led status " << gs7->getLedStatus() << endl;
 					cout << "get sensor typ str " << gs7->getSensorTypeStr() << endl;
-					cout << "get gas ppm " << gs7->getGasConcentrationPPMPPB() << endl;
+					cout << "get gas particles " << gs7->getGasConcentrationParticles() << endl;
 					cout << "error code " << gs7->getErrorCode() << endl;
 					cout << "error count " << gs7->getErrorCount() << endl;
 
@@ -469,9 +453,11 @@ int main() {
 					cout << "debug level je " << gs7->getDebugLevel() << endl;
 					cout << "get led status " << gs7->getLedStatus() << endl;
 					cout << "get sensor typ str " << gs7->getSensorTypeStr() << endl;
-					cout << "get gas ppm " << gs7->getGasConcentrationPPMPPB() << endl;
+					cout << "get gas particles " << gs7->getGasConcentrationParticles() << endl;
 					cout << "error code " << gs7->getErrorCode() << endl;
 					cout << "error count " << gs7->getErrorCount() << endl;
+					cout << endl;
+					cout << endl;
 					cout << endl;
 
 					usleep(1000 * 10000);
@@ -493,7 +479,8 @@ int main() {
 					// nepostojeci, pokvaren, iskljucen //
 					//////////////////////////////////////
 					//////////////////////////////////////
-					cout << "----- talk to nepostojeci -----" << endl;
+					cout << "----- DEBUG_LEVEL + senzor nije ispravan -----" << endl;
+					cout << "------------ talk to nepostojeci -------------" << endl;
 					cout << "mux will be " << nepostojeci->getMuxAddress() << endl;
 
 					cout << "--------" << endl;
@@ -503,7 +490,7 @@ int main() {
 					nepostojeci->getDebugLevel();
 					nepostojeci->getLedStatus();
 					nepostojeci->getSensorTypeStr();
-					nepostojeci->getGasConcentrationPPMPPB();
+					nepostojeci->getGasConcentrationParticles();
 					cout << "nadam se da je bila tisina" << endl;
 					cout << "a sad mi reci error code " << nepostojeci->getErrorCode() << endl;
 					cout << "a sad mi reci error count " << nepostojeci->getErrorCount() << endl;
@@ -514,7 +501,7 @@ int main() {
 					cout << "debug level je " << nepostojeci->getDebugLevel() << endl;
 					cout << "get led status " << nepostojeci->getLedStatus() << endl;
 					cout << "get sensor typ str " << nepostojeci->getSensorTypeStr() << endl;
-					cout << "get gas ppm " << nepostojeci->getGasConcentrationPPMPPB() << endl;
+					cout << "get gas particles " << nepostojeci->getGasConcentrationParticles() << endl;
 					cout << "error code " << nepostojeci->getErrorCode() << endl;
 					cout << "error count " << nepostojeci->getErrorCount() << endl;
 
@@ -526,9 +513,11 @@ int main() {
 					cout << "debug level is" << nepostojeci->getDebugLevel() << endl;
 					cout << "get led status " << nepostojeci->getLedStatus() << endl;
 					cout << "get sensor typ str " << nepostojeci->getSensorTypeStr() << endl;
-					cout << "get gas ppm " << nepostojeci->getGasConcentrationPPMPPB() << endl;
+					cout << "get gas particles " << nepostojeci->getGasConcentrationParticles() << endl;
 					cout << "error code " << nepostojeci->getErrorCode() << endl;
 					cout << "error count " << nepostojeci->getErrorCount() << endl;
+					cout << endl;
+					cout << endl;
 					cout << endl;
 
 					usleep(1000 * 10000);
@@ -553,25 +542,25 @@ int main() {
 					cout << "-------------------------------------" << endl;
 					unsigned int instance = adr_O2;
 					cout << "kreiram GasSensor *xx = new GasSensor( " << instance << " )" << endl;
-					GasSensor *xx = new GasSensor(instance, uartFileDescriptor, 4);
+					GasSensor *xx = new GasSensor(instance, uartFileDescriptor, 0);
 					cout << "koliko je bilo gresaka: " << xx->getErrorCount() << endl;
 					cout << "poslednji errorCode   : " << xx->getErrorCode() << endl;
-					cout << "mux adr:	"	<< xx->getMuxAddress() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "CRC checking:	" 	<< xx->getChecksumValidatorState()	<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "mux adr:	"		<< xx->getMuxAddress() 					<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "CRC checking:	" 	<< xx->getChecksumValidatorState()		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "setting led off" << endl;
 					xx->setLedOff();
-					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "led stat:	"		<< xx->getLedStatus() 					<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "setting led on" << endl;
 					xx->setLedOn();
-					cout << "led stat:	"	<< xx->getLedStatus() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "led stat:	"		<< xx->getLedStatus() 					<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 
 					cout << "tip (hex):	" 	<< xx->getSensorTypeHex() 					<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "tip (str):	" 	<< xx->getSensorTypeStr() 					<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "max range:	" 	<< xx->getMaxRange() 						<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "decimala:	" 	<< xx->getDecimals() 						<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "ppm:		" 	<< xx->getGasConcentrationPPMPPB() 			<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "mg/m3:		" 	<< xx->getGasConcentrationMgM3_DO_NOT_USE() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
-					cout << "% of max:	" 	<< xx->getGasPercentageOfMaxPPMPPB()		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "particles:	" 	<< xx->getGasConcentrationParticles() 		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "mass/m3:	" 	<< xx->getGasConcentrationMass_DO_NOT_USE() << "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
+					cout << "% of max:	" 	<< xx->getGasPercentageOfMaxParticles()		<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "temp °C:	" 	<< xx->getTemperature()						<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 					cout << "humidity:	" 	<< xx->getRelativeHumidity()				<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;
 

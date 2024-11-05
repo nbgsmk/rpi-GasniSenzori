@@ -78,25 +78,33 @@ rx (13) chars
 
 
 
------------------------------------------
 
-RUCNO SAM podesio da su decimals = 2
-dobije se
 
+-------------- novi datasheet --------------
+
+----- talk to CO -----
+mux will be 4
+toggle sensor running led a few times, just to know we are here
+led should be off
+led should be on
+led should be off
+sensor tip hex 19
 sensor tip str CO
 ---- measurements ----
 br decimala 2
-CO raw ppm:    0xff     0x86     0x00     0xc0     0x00     0x64     0x00     0xa7     0xaf  
-gas ppm 1.67
-CO raw mg/m3:    0xff     0x86     0x00     0xc0     0x00     0x64     0x00     0xa7     0xaf  
-gas mg/m3 1.92
-CO raw %:    0xff     0x86     0x00     0xc0     0x00     0x64     0x00     0xa7     0xaf  
-gas percentage of max scale 167
-temperature 30.24 C 
-humidity 42.68 % 
+gas particles 4.62 ppm
+gas vol. 5.31 mg/m3
+gas percentage of max scale 4.62
+temperature 29.21 C 
+humidity 30.45 % 
 ----  done  ----
 
 
+Ja sam CO , na adresi 4, merim 4.66 ppm, T=29.06°C, rh=31.55%
+Ja sam H2S, na adresi 5, merim 0.03 ppm, T=27.71°C, rh=32.7%
+Ja sam O2 , na adresi 3, merim  20.49 %, T=25.77°C, rh=38.89%
 
-
+Ja sam CO , na adresi 4, merim 3.99 ppm, T=27.35°C, rh=34.52%
+Ja sam H2S, na adresi 5, merim 0.02 ppm, T=27.31°C, rh=33.72%
+Ja sam O2 , na adresi 3, merim   20.9 %, T=26.83°C, rh=37.61%
 

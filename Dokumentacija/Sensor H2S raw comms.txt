@@ -90,25 +90,22 @@ rx (13) chars
 
 
 
------------------------------------------
+-------------- novi datasheet --------------
 
-RUCNO SAM podesio da su decimals = 2
-dobije se
-
+----- talk to H2S -----
+mux will be 5
+toggle sensor running led a few times, just to know we are here
+led should be off
+led should be on
+led should be off
+sensor tip hex 1c
 sensor tip str H2S
 ---- measurements ----
 br decimala 2
-H2S raw ppm:    0xff     0x86     0x00     0x02     0x00     0x64     0x00     0x02     0x12  
-gas ppm 0.02
-H2S raw mg/m3:    0xff     0x86     0x00     0x02     0x00     0x64     0x00     0x02     0x12  
-gas mg/m3 0.02
-H2S raw %:    0xff     0x86     0x00     0x02     0x00     0x64     0x00     0x02     0x12  
-gas percentage of max scale 2
-temperature 28.81 C 
-humidity 44.27 % 
+gas particles 0.02 ppm
+gas vol. 0.02 mg/m3
+gas percentage of max scale 0.02
+temperature 27.56 C 
+humidity 32.02 % 
 ----  done  ----
-
-
-
-
 
