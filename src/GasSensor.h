@@ -49,6 +49,8 @@ public:
 	float getGasConcentrationParticles();		// koncentracija gasa [ppm, ppb, %]
 	float getGasConcentrationMass_DO_NOT_USE();	// koncentracija gasa [mg/m3, ug/m3, *10g/m3]
 	float getGasPercentageOfMaxParticles();		// koncentracija 0~100% od maksimalnog opsega [ppm, ppb, %]
+	std::string getUnitsForParticles();			// jedinica [ppm, ppb, %]... za getGasConcentrationParticles()
+	std::string getUnitsForMass();				// jedinica [mg/m3, ug/m3, *10g/m3]... za getGasConcentrationMass_DO_NOT_USE()
 	float getTemperature();						// sve zajedno merimo
 	float getRelativeHumidity();				// sve zajedno merimo
 
@@ -84,8 +86,8 @@ private:
 		ErrCodes_t state = NOT_DEFINED;					// za sada write only ali ga kasnije ne proveravam. // TODO
 		uint8_t tip = 0;
 		float maxRange = -1;
-		char unit_str_D7_concentration_1[50] = "";
-		char unit_str_D7_concentration_2[50] = "";
+		char unit_str_D7_concentration_1_particles[50] = "";
+		char unit_str_D7_concentration_2_mass[50] = "";
 		int decimals = -1;
 		int sign = -1;
 	} sensorProperties;

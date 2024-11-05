@@ -265,24 +265,24 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D1_DO_NOT_USE(){
 	sensorProperties.maxRange = (float) ( (reply.at(1) << 8) | reply.at(2) );
 	switch (reply.at(3)) {
 		case 0x02:
-			strcpy(sensorProperties.unit_str_D7_concentration_1, "ppm");
-			strcpy(sensorProperties.unit_str_D7_concentration_2, "mg/m3");
+			strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "ppm");
+			strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "mg/m3");
 			break;
 
 		case 0x04:
-			strcpy(sensorProperties.unit_str_D7_concentration_1, "ppb");
-			strcpy(sensorProperties.unit_str_D7_concentration_2, "ug/m3");
+			strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "ppb");
+			strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "ug/m3");
 			break;
 
 		case 0x08:
-			strcpy(sensorProperties.unit_str_D7_concentration_1, "%");
-			strcpy(sensorProperties.unit_str_D7_concentration_1, "*10g/m3");
+			strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "%");
+			strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "*10g/m3");
 			break;
 
 		default:
 			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
-			strcpy(sensorProperties.unit_str_D7_concentration_1, "d1:_?_unit_");
-			strcpy(sensorProperties.unit_str_D7_concentration_2, "d1:_?_unit_");
+			strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "d1:_?_unit_");
+			strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "d1:_?_unit_");
 			break;
 	}
 	sensorProperties.decimals = (int) ( ( reply.at(7) & 0b11110000 ) >> 4 );	// decimal places:bit 7~4, zatim shift >>4 da dodje na LSB poziciju
@@ -334,24 +334,24 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 		sensorProperties.maxRange = (float) ( (reply.at(3) << 8) | reply.at(4) );
 		switch (reply.at(5)) {
 			case 0x02:
-				strcpy(sensorProperties.unit_str_D7_concentration_1, "ppm");
-				strcpy(sensorProperties.unit_str_D7_concentration_2, "mg/m3");
+				strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "ppm");
+				strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "mg/m3");
 				break;
 
 			case 0x04:
-				strcpy(sensorProperties.unit_str_D7_concentration_1, "ppb");
-				strcpy(sensorProperties.unit_str_D7_concentration_2, "ug/m3");
+				strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "ppb");
+				strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "ug/m3");
 				break;
 
 			case 0x08:
-				strcpy(sensorProperties.unit_str_D7_concentration_1, "%");
-				strcpy(sensorProperties.unit_str_D7_concentration_2, "*10g/m3");
+				strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "%");
+				strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "*10g/m3");
 				break;
 
 			default:
 				this->H_STAT = UNEXPECTED_SENSOR_TYPE;
-				strcpy(sensorProperties.unit_str_D7_concentration_1, "d7:_?_unit_");
-				strcpy(sensorProperties.unit_str_D7_concentration_2, "d7:_?_unit_");
+				strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "d7:_?_unit_");
+				strcpy(sensorProperties.unit_str_D7_concentration_2_mass, "d7:_?_unit_");
 				break;
 		}
 		uint8_t dec = reply.at(6) & 0b11110000;		// decimal placess: bit 7~4
@@ -432,6 +432,30 @@ int GasSensor::getDecimals() {
 	return sensorProperties.decimals;
 }
 
+
+/**
+ * @brief Get units for particle concentration measurement
+ * @return one of: ppm, ppb, %... (datasheet "3. Gas Concentration Unit of Type")
+ */
+std::string GasSensor::getUnitsForParticles(){
+	return sensorProperties.unit_str_D7_concentration_1_particles;
+}
+
+
+
+/**
+ * @brief Get units for particle concentration measurement
+ * @return one of: ppm, ppb, %... (datasheet "3. Gas Concentration Unit of Type")
+ */
+std::string GasSensor::getUnitsForMass(){
+	return sensorProperties.unit_str_D7_concentration_2_mass;
+}
+
+
+
+
+
+
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // merenja
@@ -461,7 +485,7 @@ float GasSensor::getGasConcentrationParticles() {
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
 		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );
-		float ppm = (float) ( (reply.at(6) << 8) + (reply.at(7)) );	// bit[7:6]=Concentration 1 ppm, ppb... se pominje u oba datasheeta
+		float ppm = (float) ( (reply.at(6) << 8) | (reply.at(7)) );	// bit[7:6]=Concentration 1 ppm, ppb... se pominje u oba datasheeta
 		ppm = ppm / powf(10.0, sensorProperties.decimals);
 		ppm = ppm * sensorProperties.sign;
 		rezultat = ppm;
