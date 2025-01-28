@@ -90,7 +90,7 @@ void GasSensor::init(uint32_t waitSensorStartup_mS) {
 	if(DEBUG_LEVEL >=2){
 		cout << "init: sensor connection check (get running lights)" << endl;
 	}
-	send(cmdRunningLightGetStatus);	// Nije bitan rezultat. Ako ne komunicira, dobice se timeout u send() metodu i postavice se H_STAT i ERROR_CNT
+	send(cmdRunningLightGetStatus);	// Nije bitan rezultat koji se vraca. Ako nema komunikacije, dobice se timeout unutar send() metoda i postavice se H_STAT i ERROR_CNT
 
 
 	const int _metod = 7;
@@ -193,7 +193,7 @@ void GasSensor::setLedOff() {
 
 /**
  * @brief Get state of sensor activity led
- * @return blinking=true, off=false
+ * @return true = led is blinking; false = led is off
  */
 bool GasSensor::getLedStatus() {
 	bool rezultat = false;
@@ -331,7 +331,7 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0xD7);	// reply header ok?
 	if (hdr) {
 		sensorProperties.tip = reply.at(2);
-		sensorProperties.maxRange = (float) ( (reply.at(3) << 8) | reply.at(4) );
+		sensorProperties.maxRange = (float) ( (reply.at(3) << 8) | reply.at(4) );	// range u jedinicama prema "concentration 1"
 		switch (reply.at(5)) {
 			case 0x02:
 				strcpy(sensorProperties.unit_str_D7_concentration_1_particles, "ppm");
@@ -355,10 +355,10 @@ GasSensor::ErrCodes_t GasSensor::getSensorProperties_D7() {
 				break;
 		}
 		uint8_t dec = reply.at(6) & 0b11110000;		// decimal placess: bit 7~4
-		sensorProperties.decimals = (int)(dec>>4);	// shift to lsb
+		sensorProperties.decimals = (int)(dec>>4);	// shift to lsb  (tabela 5. Decimal Places)
 
 		uint8_t sgn = reply.at(6) & 0b00001111;					// sign: bits 3~0
-		sensorProperties.sign = (int) (sgn==0) ? (+1) : (-1);	// 0=>positive, 1=>negative
+		sensorProperties.sign = (int) (sgn==0) ? (+1) : (-1);	// 0=>positive, 1=>negative (tabela 4. Data Of Type)
 
 		__asm("NOP");
 	} else {
@@ -384,36 +384,37 @@ int GasSensor::getSensorTypeHex(){
  * @return string describing sensor type, such as "H2S", "CO"...
  */
 std::string GasSensor::getSensorTypeStr(){
-	std::string rez = "";
+	std::stringstream rez;
+	rez << "";
 	// Raw property je HEX a funkcija castuje na INT.
 	// NE KORISTI FUNKCIJU da se ne zajebes!
 	switch (sensorProperties.tip) {
 		case 0x19:
-			rez = "CO";
+			rez << "CO";
 			break;
 
 		case 0x1C:
-			rez = "H2S";
+			rez << "H2S";
 			break;
 
 		case 0x22:
-			rez = "O2";
+			rez << "O2";
 			break;
 
 		default:
 			/* 
 			* ovo se desava ako je:
-			* - senzor stvarno prijavio neki tip koji ovde nije definisan
+			* - senzor stvarno prijavio neki tip koji ovde nije definisan - onda treba dopuniti slucajeve gore
 			* - nastupila bilo kakva greska u komunikaciji sa senzorom
 			* - senzor nije nista odgovorio i properties.tip je prazan ili nula ili null valjda
 			*/
 			// ovo se desava i ako je nastupila greska ili
-			rez = "hmm...nepoznat senzor!?";
+			rez << "unknown typ " << std::hex << sensorProperties.tip;
 			this->H_STAT = UNEXPECTED_SENSOR_TYPE;
 			break;
 	};
 
-	return rez;
+	return rez.str();
 }
 
 
@@ -434,7 +435,7 @@ int GasSensor::getDecimals() {
 
 
 /**
- * @brief Get units for particle concentration measurement
+ * @brief For 0xD7 properties: get units for particle measurement ie "Concentration 1" from the datasheet table
  * @return one of: ppm, ppb, %... (datasheet "3. Gas Concentration Unit of Type")
  */
 std::string GasSensor::getUnitsForParticles(){
@@ -444,10 +445,10 @@ std::string GasSensor::getUnitsForParticles(){
 
 
 /**
- * @brief Get units for particle concentration measurement
- * @return one of: ppm, ppb, %... (datasheet "3. Gas Concentration Unit of Type")
+ * @brief DO NOT USE-> For 0xD1 properties: get units for mass measurement ie "Concentration 2" from the datasheet table
+ * @return one of: mg/m3, ug/m3, 10g/m3... (datasheet "3. Gas Concentration Unit of Type")
  */
-std::string GasSensor::getUnitsForMass(){
+std::string GasSensor::getUnitsForMass_DO_NOT_USE(){
 	return sensorProperties.unit_str_D7_concentration_2_mass;
 }
 
@@ -469,7 +470,7 @@ std::string GasSensor::getUnitsForMass(){
 float GasSensor::getGasConcentrationParticles() {
 	float rezultat = 0.0f;
 	vector<uint8_t> reply = send(cmdReadGasConcentrationTempAndHumidity);
-	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost?
+	getSensorProperties_D7();	// popunim D7 da bih imao najnoviji sign. sta ako je bas malopre bila negativna vrednost, npr -5°C
 
 	if (this->DEBUG_LEVEL == -4){
 		cout << "(" << getSensorTypeStr() << " raw measurement[hex]: ";		// "O2 raw ppm: 0x02, 0x1c...
@@ -484,10 +485,10 @@ float GasSensor::getGasConcentrationParticles() {
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );
-		float ppm = (float) ( (reply.at(6) << 8) | (reply.at(7)) );	// bit[7:6]=Concentration 1 ppm, ppb... se pominje u oba datasheeta
-		ppm = ppm / powf(10.0, sensorProperties.decimals);
-		ppm = ppm * sensorProperties.sign;
+		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );	// range odgovarajuci za "concentration 1". Daje skaliranu vrednost npr 100ppm (ili 25% za O2)
+		float ppm = (float) ( (reply.at(6) << 8) | (reply.at(7)) );	// byte[7:6]=Concentration 1 ppm, ppb... se pominje u oba datasheeta
+		ppm = ppm / powf(10.0, sensorProperties.decimals);			// i mora da se deli sa 10^(br decimala) tj 2->delim sa 100; 3->delim sa 1000
+		ppm = ppm * sensorProperties.sign;							// i pomnozim sa znakom
 		rezultat = ppm;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
@@ -521,10 +522,10 @@ float GasSensor::getGasConcentrationMass_DO_NOT_USE() {
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		// float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );	// NE!!! Max range se odnosi samo na ppm, ppb...
-		float mgm3 = (float) ( (reply.at(2) << 8) | (reply.at(3)) );	// bit[7:6]=Concentration 2 mg/m3, ug/m3... se pominje samo u TB600
-		mgm3 = mgm3 / powf(10.0, sensorProperties.decimals);
-		mgm3 = mgm3 * sensorProperties.sign;
+		// float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );	// NE!!! Max range se odnosi samo na ppm, ppb...tj "concentration 1"
+		float mgm3 = (float) ( (reply.at(2) << 8) | (reply.at(3)) );	// byte[7:6]=Concentration 2 mg/m3, ug/m3... se pominje samo u TB600
+		mgm3 = mgm3 / powf(10.0, sensorProperties.decimals);			// podelim sa 10^(br decimala)
+		mgm3 = mgm3 * sensorProperties.sign;							// i pomnozim sa znakom
 		rezultat = mgm3;
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
@@ -558,10 +559,11 @@ float GasSensor::getGasPercentageOfMaxParticles() {
 
 	bool hdr = (reply.at(0) == 0xFF) && (reply.at(1) == 0x87);		// reply header ok?
 	if (hdr) {
-		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );
-		float ppm = (float) ( (reply.at(6) << 8) | (reply.at(7)) );
-		ppm = ppm / powf(10.0f, sensorProperties.decimals);
+		float max = (float) ( (reply.at(4) << 8) | (reply.at(5)) );		// range vec daje skaliranu vrednost npr 100 ili 25ppm
+		float ppm = (float) ( (reply.at(6) << 8) | (reply.at(7)) );		// ovo mora da se podeli sa brojem decimala
+		ppm = ppm / powf(10.0f, sensorProperties.decimals);				// podeli sa brojem decimala
 		rezultat = (ppm / max) * 100.0f;
+		rezultat = std::abs(rezultat);									// ako je ppm bio negativan
 	} else {
 		this->H_STAT = WRONG_RESPONSE_HEADER;
 		rezultat = MEASUREMENT_ERROR;

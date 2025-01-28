@@ -118,7 +118,7 @@ int main() {
 		 * blok 9 = unosim greske u uart vezu i prikazujem sta se desava
 		 */
 
-		int blok = 9;
+		int blok = 5;
 		cout << endl;
 		cout << "-----------" << endl;
 		cout << "TEST BLOK " << blok << endl;
@@ -166,7 +166,7 @@ int main() {
 					cout << "gas particles " << co->getGasConcentrationParticles() << " " << co->getUnitsForParticles() << endl;
 
 					auto mg = co->getGasConcentrationMass_DO_NOT_USE();
-					cout << "gas vol. " << co->getGasConcentrationMass_DO_NOT_USE() << " " << co->getUnitsForMass() << endl;
+					cout << "gas vol. " << co->getGasConcentrationMass_DO_NOT_USE() << " " << co->getUnitsForMass_DO_NOT_USE() << endl;
 
 					auto percOfMax = co->getGasPercentageOfMaxParticles();
 					cout << "gas percentage of max scale " << percOfMax << endl;
@@ -217,7 +217,7 @@ int main() {
 					cout << "gas particles " << h2s->getGasConcentrationParticles() << " " << h2s->getUnitsForParticles() << endl;
 
 					mg = h2s->getGasConcentrationMass_DO_NOT_USE();
-					cout << "gas vol. " << h2s->getGasConcentrationMass_DO_NOT_USE() << " " << h2s->getUnitsForMass() << endl;
+					cout << "gas vol. " << h2s->getGasConcentrationMass_DO_NOT_USE() << " " << h2s->getUnitsForMass_DO_NOT_USE() << endl;
 
 					percOfMax = h2s->getGasPercentageOfMaxParticles();
 					cout << "gas percentage of max scale " << percOfMax << endl;
@@ -269,7 +269,7 @@ int main() {
 					cout << "gas particles " << o2->getGasConcentrationParticles() << " " << o2->getUnitsForParticles() << endl;
 
 					mg = o2->getGasConcentrationMass_DO_NOT_USE();
-					cout << "gas vol. " << o2->getGasConcentrationMass_DO_NOT_USE() << " " << o2->getUnitsForMass() << endl;
+					cout << "gas vol. " << o2->getGasConcentrationMass_DO_NOT_USE() << " " << o2->getUnitsForMass_DO_NOT_USE() << endl;
 
 					percOfMax = o2->getGasPercentageOfMaxParticles();
 					cout << "gas percentage of max scale " << percOfMax << endl;
@@ -533,6 +533,9 @@ int main() {
 			case 9: {
 				
 				float merenje;
+					unsigned int instance = adr_O2;
+					cout << "kreiram GasSensor *xx = new GasSensor( " << instance << " )" << endl;
+					GasSensor *xx = new GasSensor(instance, uartFileDescriptor, 0);
 
 				for ( ; ; ) {
 					cout << endl;
@@ -540,9 +543,9 @@ int main() {
 					cout << "Sensor errors" << endl;
 					cout << "O2 je jedini povezan na uart test rig" << endl;
 					cout << "-------------------------------------" << endl;
-					unsigned int instance = adr_O2;
-					cout << "kreiram GasSensor *xx = new GasSensor( " << instance << " )" << endl;
-					GasSensor *xx = new GasSensor(instance, uartFileDescriptor, 0);
+					// unsigned int instance = adr_O2;
+					// cout << "kreiram GasSensor *xx = new GasSensor( " << instance << " )" << endl;
+					// GasSensor *xx = new GasSensor(instance, uartFileDescriptor, 0);
 					cout << "koliko je bilo gresaka: " << xx->getErrorCount() << endl;
 					cout << "poslednji errorCode   : " << xx->getErrorCode() << endl;
 					cout << "mux adr:	"		<< xx->getMuxAddress() 					<< "\t errorCount: " << xx->getErrorCount() << "\t errorCode: " << xx->getErrorCode() << endl;

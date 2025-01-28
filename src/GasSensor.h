@@ -50,7 +50,7 @@ public:
 	float getGasConcentrationMass_DO_NOT_USE();	// koncentracija gasa [mg/m3, ug/m3, *10g/m3]
 	float getGasPercentageOfMaxParticles();		// koncentracija 0~100% od maksimalnog opsega [ppm, ppb, %]
 	std::string getUnitsForParticles();			// jedinica [ppm, ppb, %]... za getGasConcentrationParticles()
-	std::string getUnitsForMass();				// jedinica [mg/m3, ug/m3, *10g/m3]... za getGasConcentrationMass_DO_NOT_USE()
+	std::string getUnitsForMass_DO_NOT_USE();				// jedinica [mg/m3, ug/m3, *10g/m3]... za getGasConcentrationMass_DO_NOT_USE()
 	float getTemperature();						// sve zajedno merimo
 	float getRelativeHumidity();				// sve zajedno merimo
 
