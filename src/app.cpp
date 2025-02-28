@@ -15,6 +15,10 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
+// timestamp only
+#include <chrono>
+#include <ctime>
+// #include <format>
 
 // hardware driver
 #include <wiringPi.h>
@@ -112,13 +116,14 @@ int main() {
 		 * blok 3 = sensor response time (Rpi4: 100..110mS. Varijacije na uart test rigu 80..150mS)
 		 * blok 4 = UartMux test
 		 * blok 5 = svaki senzor mora da zna svoj tip i adresu
+		 * blok 51= isto kao 5 ali output formatiran kao csv, tsv...
 		 * blok 6 = prozivka u krug
 		 * blok 7 = DEBUG_LEVEL test + senzor ispravan
 		 * blok 8 = DEBUG_LEVEL test + senzor NIJE ispravan
 		 * blok 9 = unosim greske u uart vezu i prikazujem sta se desava
 		 */
 
-		int blok = 5;
+		int blok = 51;
 		cout << endl;
 		cout << "-----------" << endl;
 		cout << "TEST BLOK " << blok << endl;
@@ -377,9 +382,9 @@ int main() {
 					cout << "-------------- self-aware -------------" << endl;
 					cout << "--- ko je na ovoj adresi i sta meri ---" << endl;
 					cout << "---------------------------------------" << endl;
-					cout << "Ja sam " << sa->getSensorTypeStr() << " , na adresi " << sa->getMuxAddress() << ", merim " << sa->getGasConcentrationParticles() << " " << sa->getUnitsForParticles() << ", T=" << sa->getTemperature() << "°C, rh=" << sa->getRelativeHumidity() << "%" << endl;
-					cout << "Ja sam " << sb->getSensorTypeStr() << ", na adresi " << sb->getMuxAddress() << ", merim " << sb->getGasConcentrationParticles() << " " << sb->getUnitsForParticles() << ", T=" << sb->getTemperature() << "°C, rh=" << sb->getRelativeHumidity() << "%" << endl;
-					cout << "Ja sam " << sc->getSensorTypeStr() << " , na adresi " << sc->getMuxAddress() << ", merim  " << sc->getGasConcentrationParticles() << " " << sc->getUnitsForParticles() << ", T=" << sc->getTemperature() << "°C, rh=" << sc->getRelativeHumidity() << "%" << endl;
+					cout << "Ja sam " << sa->getSensorTypeStr() << "\t na adresi " << sa->getMuxAddress() << "\t merim " << sa->getGasConcentrationParticles() << " " << sa->getUnitsForParticles() << "\t T=" << sa->getTemperature() << "°C, \t rh=" << sa->getRelativeHumidity() << "%" << endl;
+					cout << "Ja sam " << sb->getSensorTypeStr() << "\t na adresi " << sb->getMuxAddress() << "\t merim " << sb->getGasConcentrationParticles() << " " << sb->getUnitsForParticles() << "\t T=" << sb->getTemperature() << "°C, \t rh=" << sb->getRelativeHumidity() << "%" << endl;
+					cout << "Ja sam " << sc->getSensorTypeStr() << "\t na adresi " << sc->getMuxAddress() << "\t merim " << sc->getGasConcentrationParticles() << " " << sc->getUnitsForParticles() << "\t T=" << sc->getTemperature() << "°C, \t rh=" << sc->getRelativeHumidity() << "%" << endl;
 					cout << endl;
 
 					cout << "senzor na nepostojecoj adresi 2 ?" << endl;
@@ -394,6 +399,59 @@ int main() {
 				}
 
 				break;
+			}
+
+			//////////////////////////////////////////////////
+			// Isto kao 5 ali output pogodan za import kao csv
+			//////////////////////////////////////////////////
+			case 51: {
+				GasSensor *sa = new GasSensor(4, uartFileDescriptor);
+				GasSensor *sb = new GasSensor(5, uartFileDescriptor);
+				GasSensor *sc = new GasSensor(3, uartFileDescriptor);
+				string sep = ";";	// separator izmedju elemenata
+				cout << "------------- printout za data logger -------------" << endl;
+
+				// explanation //
+				cout << "timestamp" << sep;		// na pocetku svega timestamp
+				cout << "s1 (units)" << sep << "s2 (units)" << sep << "s3 (units)" << sep;
+				cout << "s1 temperature" << sep << "s2 temperature" << sep << "s3 temperature" << sep;
+				cout << "s1 rel.humidity" << sep << "s2 rel.humidity" << sep << "s3 rel.humidity";		// na poslednjem elementu ne ide separator
+				cout << endl;																				// vec novi red
+
+				// actual data headers //
+				cout << "ISO time" << sep;
+				cout << sa->getSensorTypeStr() << " (" << sa->getUnitsForParticles() << ")" << sep;
+				cout << sb->getSensorTypeStr() << " (" << sb->getUnitsForParticles() << ")" << sep;
+				cout << sc->getSensorTypeStr() << " (" << sc->getUnitsForParticles() << ")" << sep;			
+				cout << "s1 T(°C)" << sep << "s2 T(°C)" << sep << "s3 T(°C)" << sep;
+				cout << "s1 Rh(%)" << sep << "s2 Rh(%)" << sep << "s3 Rh(%)";							// na poslednjem elementu ne ide separator
+				cout << endl;																				// vec novi red
+
+				for(;;) {
+
+					// faking timestamp
+					time_t now;
+					time(&now);
+					char buf[sizeof "2011-10-08T07:07:09Z"];
+					strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
+					cout << "\"" << buf << "\"" << sep;
+
+					// measurements //
+					cout << sa->getGasConcentrationParticles() << sep;
+					cout << sb->getGasConcentrationParticles() << sep;
+					cout << sc->getGasConcentrationParticles() << sep;
+				
+					cout << sa->getTemperature() << sep;
+					cout << sb->getTemperature() << sep;
+					cout << sc->getTemperature() << sep;
+				
+					cout << sa->getRelativeHumidity() << sep;
+					cout << sb->getRelativeHumidity() << sep;
+					cout << sc->getRelativeHumidity();			// na poslednjem elementu ne ide zarez
+					cout << endl;								// vec novi red
+					usleep(1000 * 5000);
+				}
+
 			}
 
 			//////////////////////////
